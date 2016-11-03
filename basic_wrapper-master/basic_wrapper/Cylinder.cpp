@@ -29,7 +29,7 @@ Cylinder::~Cylinder()
 
 void Cylinder::init()
 {
-	numperdisk = 40;
+	numperdisk = 20;
 
 	makeCylinderVBO(numperdisk);
 	makeCylinderTopVBO(numperdisk);

@@ -145,12 +145,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="wrapper_glfw.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="poslight.cpp" />
     <ClCompile Include="Sphere.cpp" />

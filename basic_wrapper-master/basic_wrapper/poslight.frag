@@ -33,7 +33,7 @@ void main()
     float attenuation = 1.0 / (1.0 + attenuation_k * pow(distanceToLight, 2));
 
 
-	vec3 ambient = diffuse_albedo.xyz *0.2;
+	vec3 ambient = diffuse_albedo.xyz * 0.2;
 
 	// Calculate the output colour, includung attenuation on the diffuse and specular components
 	// Note that you may want to exclude the ambient form the attenuation factor so objects
