@@ -11,6 +11,7 @@ if you prefer */
 #pragma comment(lib, "glfw3.lib")
 #pragma comment(lib, "glloadD.lib")
 #pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "soil.lib")
 
 /* Include the header to the GLFW wrapper class which
    also includes the OpenGL extension initialisation*/
@@ -20,6 +21,9 @@ if you prefer */
 #include "Tetrahedron.h"
 #include "Sphere.h"
 #include "Cube.h"
+
+//include soil
+#include "soil.h"
 
 
 /* Include GLM core and matrix extensions*/
@@ -42,6 +46,8 @@ GLuint colourmode;	/* Index of a uniform to switch the colour mode in the vertex
 					  I've included this to show you how to pass in an unsigned integer into
 					  your vertex shader. */
 GLuint emitmode;
+
+GLuint texID;
 
 /* Position and view globals */
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
@@ -67,7 +73,7 @@ void init(GLWrapper *glw)
 	y = 0;
 	z = 0;
 	vx = 0; vx = 0, vz = 4.f;
-	light_x = 0; light_y = 0; light_z = 0;
+	light_x = .5; light_y = .5; light_z = .5;
 	angle_x = angle_y = angle_z = 0;
 	angle_inc_x = angle_inc_y = angle_inc_z = 0;
 	scale = 1.f;
@@ -84,7 +90,7 @@ void init(GLWrapper *glw)
 	
 	cylinder.init();
 	sphere.init();
-	//tetrahedron.init();
+	tetrahedron.init();
 
 	/* Load and build the vertex and fragment shaders */
 	try
@@ -96,6 +102,30 @@ void init(GLWrapper *glw)
 		std::cout << "Caught exception: " << e.what() << std::endl;
 		std::cin.ignore();
 		exit(0);
+	}
+
+	try
+	{
+		/* Not actually needed if using one texture at a time */
+		glActiveTexture(GL_TEXTURE0);
+
+		/* load an image file directly as a new OpenGL texture */
+		texID = SOIL_load_OGL_texture("img.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+
+		/* check for an error during the load process */
+		if (texID == 0)
+		{
+			printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+
+		/* Standard bit of code to enable a uniform sampler for our texture */
+		int loc = glGetUniformLocation(program, "tex1");
+		if (loc >= 0) glUniform1i(loc, 0);
+	}
+	catch (std::exception &e)
+	{
+		printf("\nImage file loading failed.");
 	}
 
 	/* Define uniforms to send to vertex shader */
@@ -113,7 +143,7 @@ void init(GLWrapper *glw)
 void display()
 {
 	/* Define the background colour */
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.5f, 0.6f, 1.0f);
 
 	/* Clear the colour and frame buffers */
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -124,7 +154,7 @@ void display()
 	/* Make the compiled shader program current */
 	glUseProgram(program);
 
-	// Define the model transformations for the cube
+	 //Define the model transformations for the cube
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(x+0.5, y, z));
 	model = glm::scale(model, glm::vec3(scale, scale, scale));//scale equally in all axis
@@ -132,28 +162,28 @@ void display()
 	model = glm::rotate(model, -angle_y, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -angle_z, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
 
-	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	 //Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 Projection = glm::perspective(30.0f, aspect_ratio, 0.1f, 100.0f);
 
-	// Camera matrix
+	 //Camera matrix
 	glm::mat4 View = glm::lookAt(
 		glm::vec3(0, 0, 4), // Camera is at (0,0,4), in World Space
 		glm::vec3(0, 0, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 		);
 
-	// Apply rotations to the view position
+	 //Apply rotations to the view position
 	View = glm::rotate(View, -vx, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	View = glm::rotate(View, -vy, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	View = glm::rotate(View, -vz, glm::vec3(0, 0, 1));
 
-	// Define the light position and transform by the view matrix
+	 //Define the light position and transform by the view matrix
 	glm::vec4 lightpos = View *  glm::vec4(light_x, light_y, light_z, 1.0);
 
-	// Define the normal matrix
+	 //Define the normal matrix
 	glm::mat3 normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 
-	// Send our uniforms variables to the currently bound shader,
+	 //Send our uniforms variables to the currently bound shader,
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 	glUniform1ui(colourmodeID, colourmode);
 	glUniform1ui(emitmodeID, emitmode);
@@ -163,19 +193,67 @@ void display()
 	glUniform4fv(lightposID, 1, glm::value_ptr(lightpos));
 
 	/* Draw our cube*/
-	cube.makeCube();
+	//cube.makeCube();
 
 	/* Define the model transformations for our sphere */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-x-0.5, 0, 0));
-	model = glm::scale(model, glm::vec3(scale/3.f, scale/3.f, scale/3.f));//scale equally in all axis
-	model = glm::rotate(model, -angle_x, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -angle_y, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -angle_z, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	model = glm::translate(model, glm::vec3(0, 0, 0));
+	model = glm::scale(model, glm::vec3(scale/2.f, scale/2.0f, scale/20.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
 	cylinder.drawCylinder();
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, -0.05));
+	model = glm::scale(model, glm::vec3(scale / 1.5f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	cylinder.drawCylinder();
+	//tetrahedron.drawTetrahedron();
+	//drawSphere();
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, 0.05));
+	model = glm::scale(model, glm::vec3(scale / 25.f, scale / 25.f, scale / 25.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	cylinder.drawCylinder();
+	//tetrahedron.drawTetrahedron();
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, 0.06));
+	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	tetrahedron.drawTetrahedron();
+
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, 0.06));
+	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	tetrahedron.drawTetrahedron();
 	//tetrahedron.drawTetrahedron();
 	//drawSphere();
 
@@ -266,7 +344,7 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 /* Entry point of program */
 int main(int argc, char* argv[])
 {
-	GLWrapper *glw = new GLWrapper(1024, 768, "Lab2: Hello 3D");;
+	GLWrapper *glw = new GLWrapper(1024, 768, "Gregor Whyte - Graphics Assignment 1");;
 
 	if (!ogl_LoadFunctions())
 	{

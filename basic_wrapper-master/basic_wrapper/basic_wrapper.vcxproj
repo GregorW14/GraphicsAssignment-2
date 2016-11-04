@@ -163,6 +163,9 @@
     <None Include="poslight.frag" />
     <None Include="poslight.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="img.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
