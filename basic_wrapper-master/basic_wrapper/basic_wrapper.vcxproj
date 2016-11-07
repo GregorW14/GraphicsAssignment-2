@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="wrapper_glfw.h" />

@@ -13,6 +13,7 @@ also includes the OpenGL extension initialisation*/
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Cylinder.h"
+#include "Common.h"
 
 
 
@@ -52,10 +53,10 @@ GLuint Cylinder::makeCylinderVBO(GLuint numperdisk)
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
 	{
-		pColours[i * 4] = pVertices[i * 3];
-		pColours[i * 4 + 1] = pVertices[i * 3 + 1];
-		pColours[i * 4 + 2] = pVertices[i * 3 + 2];
-		pColours[i * 4 + 3] = 1.f;
+		pColours[i * 4] = 1.0f;
+		pColours[i * 4 + 1] = 1.0f;
+		pColours[i * 4 + 2] = 1.0f;
+		pColours[i * 4 + 3] = 1.0f;
 	}
 
 	/* Generate the vertex buffer object */
@@ -114,9 +115,10 @@ GLuint Cylinder::makeCylinderVBO(GLuint numperdisk)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numindices * sizeof(GLuint), pindices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	delete pindices;
-	delete pColours;
-	delete pVertices;
+	delete[] pindices;
+	delete[] pColours;
+	delete[] pVertices;
+	delete[] pNormals;
 	return numvertices;
 }
 
@@ -133,10 +135,10 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
 	{
-		pTopColours[i * 4] = pTopVertices[i * 3];
-		pTopColours[i * 4 + 1] = pTopVertices[i * 3 + 1];
-		pTopColours[i * 4 + 2] = pTopVertices[i * 3 + 2];
-		pTopColours[i * 4 + 3] = 1.f;
+		pTopColours[i * 4] = 1.0f;
+		pTopColours[i * 4 + 1] = 1.0f;
+		pTopColours[i * 4 + 2] = 1.0f;
+		pTopColours[i * 4 + 3] = 1.0f;
 	}
 
 	/* Generate the vertex buffer object */
@@ -177,9 +179,10 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numindices * sizeof(GLuint), pindices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	delete pindices;
-	delete pTopColours;
-	delete pTopVertices;
+	delete[] pindices;
+	delete[] pTopColours;
+	delete[] pTopVertices;
+	delete[] pTopNormals;
 	return numvertices;
 }
 
@@ -196,10 +199,10 @@ GLuint Cylinder::makeCylinderBottomVBO(GLuint numperdisk)
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
 	{
-		pBottomColours[i * 4] = pBottomVertices[i * 3];
-		pBottomColours[i * 4 + 1] = pBottomVertices[i * 3 + 1];
-		pBottomColours[i * 4 + 2] = pBottomVertices[i * 3 + 2];
-		pBottomColours[i * 4 + 3] = 1.f;
+		pBottomColours[i * 4] = 1.0f;
+		pBottomColours[i * 4 + 1] = 1.0f;
+		pBottomColours[i * 4 + 2] = 1.0f;
+		pBottomColours[i * 4 + 3] = 1.0f;
 	}
 
 	/* Generate the vertex buffer object */
@@ -240,9 +243,10 @@ GLuint Cylinder::makeCylinderBottomVBO(GLuint numperdisk)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numindices * sizeof(GLuint), pindices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	delete pindices;
-	delete pBottomColours;
-	delete pBottomVertices;
+	delete[] pindices;
+	delete[] pBottomColours;
+	delete[] pBottomVertices;
+	delete[] pBottomNormals;
 	return numvertices;
 }
 
@@ -413,16 +417,11 @@ void Cylinder::drawCylinder()
 	glPointSize(3.f);
 
 	// Enable this line to show model in wireframe
-	//if (drawmode == 1)
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//else
+	if (drawmode == 1)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//if (drawmode == 2)
-	//{
-	//glDrawArrays(GL_POINTS, 0, numcylindervertices);
-	//}
-	///else
 	//{
 	/* Bind the indexed vertex buffer */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
@@ -463,9 +462,9 @@ void Cylinder::drawCylinder()
 		glPointSize(3.f);
 
 		// Enable this line to show model in wireframe
-		//if (drawmode == 1)
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		//else
+		if (drawmode == 1)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		//if (drawmode == 2)
@@ -499,9 +498,9 @@ void Cylinder::drawCylinder()
 		glPointSize(3.f);
 
 		// Enable this line to show model in wireframe
-		//if (drawmode == 1)
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		//else
+		if (drawmode == 1)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		//if (drawmode == 2)

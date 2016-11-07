@@ -15,6 +15,7 @@ also includes the OpenGL extension initialisation*/
 
 
 #include "Tetrahedron.h"
+#include "Common.h"
 
 
 
@@ -81,18 +82,18 @@ void Tetrahedron::defineTetrahedron()
 
 	/* Define twelve colours for the four flat shaded object */
 	GLfloat tetra_colours[] = {
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 0.0f, 1.0f };
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f };
 
 	/* Specify the colour buffer */
 	glGenBuffers(1, &tetra_buffer_colours);
@@ -135,9 +136,9 @@ void Tetrahedron::drawTetrahedron()
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// Enable this line to show model in wireframe
-	//if (drawmode == 1)
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//else
+	if (drawmode == 1)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//if (drawmode == 2)

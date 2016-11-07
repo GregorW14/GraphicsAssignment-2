@@ -13,6 +13,7 @@ also includes the OpenGL extension initialisation*/
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Cube.h"
+#include "Common.h"
 
 
 
@@ -80,47 +81,47 @@ GLfloat vertexPositions[] =
 
 /* Manually specified colours for our cube */
 float vertexColours[] = {
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 
-	0.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 
-	1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 
-	1.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 
-	1.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 
-	0.0f, 1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
+	0.3f, 0.0f, 0.0f, 1.0f,
 };
 
 /* Manually specified normals for our cube */
@@ -165,7 +166,10 @@ void Cube::makeCube()
 	glBufferData(GL_ARRAY_BUFFER, 36 * sizeof(glm::vec3), normals, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+}
 
+void Cube::drawCube()
+{
 	/* Bind cube vertices. Note that this is in attribute index 0 */
 	glBindBuffer(GL_ARRAY_BUFFER, cubeBufferObject);
 	glEnableVertexAttribArray(0);
@@ -181,7 +185,10 @@ void Cube::makeCube()
 	glBindBuffer(GL_ARRAY_BUFFER, cubeNormals);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-
+	if (drawmode == 1)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 

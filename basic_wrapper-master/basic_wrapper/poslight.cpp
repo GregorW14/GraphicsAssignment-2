@@ -17,6 +17,7 @@ if you prefer */
 #include "Tetrahedron.h"
 #include "Sphere.h"
 #include "Cube.h"
+#include "Common.h"
 
 //include soil
 #include "soil.h"
@@ -90,6 +91,7 @@ void init(GLWrapper *glw)
 	cylinder.init();
 	sphere.init();
 	tetrahedron.init();
+	cube.makeCube();
 
 	/* Load and build the vertex and fragment shaders */
 	try
@@ -103,29 +105,29 @@ void init(GLWrapper *glw)
 		exit(0);
 	}
 
-	try
-	{
-		/* Not actually needed if using one texture at a time */
-		glActiveTexture(GL_TEXTURE0);
+	//try
+	//{
+	//	/* Not actually needed if using one texture at a time */
+	//	glActiveTexture(GL_TEXTURE0);
 
-		/* load an image file directly as a new OpenGL texture */
-		texID = SOIL_load_OGL_texture("img.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+	//	/* load an image file directly as a new OpenGL texture */
+	//	texID = SOIL_load_OGL_texture("img.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+	//		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
-		/* check for an error during the load process */
-		if (texID == 0)
-		{
-			printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
-		}
+	//	/* check for an error during the load process */
+	//	if (texID == 0)
+	//	{
+	//		printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+	//	}
 
-		/* Standard bit of code to enable a uniform sampler for our texture */
-		int loc = glGetUniformLocation(program, "tex1");
-		if (loc >= 0) glUniform1i(loc, 0);
-	}
-	catch (std::exception &e)
-	{
-		printf("\nImage file loading failed.");
-	}
+	//	/* Standard bit of code to enable a uniform sampler for our texture */
+	//	int loc = glGetUniformLocation(program, "tex1");
+	//	if (loc >= 0) glUniform1i(loc, 0);
+	//}
+	//catch (std::exception &e)
+	//{
+	//	printf("\nImage file loading failed.");
+	//}
 
 	/* Define uniforms to send to vertex shader */
 	modelID = glGetUniformLocation(program, "model");
@@ -199,10 +201,11 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cube */
-	cube.makeCube();
+	cube.drawCube();
 
 
 	//Clock Mid Cube
@@ -212,10 +215,11 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cube */
-	cube.makeCube();
+	cube.drawCube();
 
 	//Clock Base Cube
 	model = glm::mat4(1.0f);
@@ -224,10 +228,11 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cube */
-	cube.makeCube();
+	cube.drawCube();
 
 	//Clock Face Outer
 	model = glm::mat4(1.0f);
@@ -236,6 +241,7 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
@@ -248,6 +254,7 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
@@ -262,6 +269,7 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
@@ -272,10 +280,11 @@ void display()
 	model = glm::mat4(1.0f);
 	model = glm::rotate(model, minuteHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
-	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::scale(model, glm::vec3(scale / 15.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
@@ -286,10 +295,11 @@ void display()
 	model = glm::mat4(1.0f);
 	model = glm::rotate(model, hourHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
-	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.8f, scale / 20.f));//scale equally in all axis
+	model = glm::scale(model, glm::vec3(scale / 15.f, scale / 1.8f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
@@ -304,10 +314,11 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */
-	cube.makeCube();
+	cube.drawCube();
 
 	//Clock Pendulum Weight
 	model = glm::mat4(1.0f);
@@ -317,6 +328,7 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis //rotating in clockwise direction around z-axis
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
 	/* Draw our cylinder */

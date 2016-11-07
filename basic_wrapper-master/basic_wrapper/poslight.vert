@@ -41,7 +41,7 @@ void main()
 	if (colourmode == 1)
 		diffuse_albedo = colour;
 	else
-		diffuse_albedo = vec4(1.0, 0, 0, 1.0);
+		diffuse_albedo = vec4(0.2, 0.3, 0.9, 1.0);
 
 	gl_Position = (projection * view * model) * position_h;
 }

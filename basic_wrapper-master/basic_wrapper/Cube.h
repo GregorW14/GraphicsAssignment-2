@@ -11,5 +11,6 @@ public:
 	~Cube();
 	void init();
 	void makeCube();
+	void drawCube();
 };
 
