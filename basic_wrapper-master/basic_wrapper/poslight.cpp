@@ -49,8 +49,8 @@ GLuint texID;
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
 GLfloat angle_y, angle_inc_y, angle_z, angle_inc_z;
 GLfloat swing = 0, swing_inc = 0.2f, swing_max = 10.f;
-GLfloat upperHandswing = 0, upperHandswing_inc = 0.08f;
-GLfloat lowerHandswing = 0, lowerHandswing_inc = upperHandswing_inc/12;
+GLfloat minuteHandswing = 0, minuteHandswing_inc = 0.08f;
+GLfloat hourHandswing = 0, hourHandswing_inc = minuteHandswing_inc/12;
 GLuint drawmode;			// Defines drawing mode of sphere as points, lines or filled polygons
 
 GLfloat light_x, light_y, light_z;
@@ -71,7 +71,7 @@ void init(GLWrapper *glw)
 	x = 0.05f;
 	y = 0;
 	z = 0;
-	vx = 0; vx = 0, vz = 4.f;
+	vx = 0; vx = 0, vz = 0;
 	light_x = .5; light_y = .5; light_z = .5;
 	angle_x = angle_y = angle_z = 0;
 	angle_inc_x = angle_inc_y = angle_inc_z = 0;
@@ -270,7 +270,7 @@ void display()
 
 	//Clock Upper Hand
 	model = glm::mat4(1.0f);
-	model = glm::rotate(model, upperHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, minuteHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
 	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
@@ -284,7 +284,7 @@ void display()
 
 	//Clock Lower Hand
 	model = glm::mat4(1.0f);
-	model = glm::rotate(model, lowerHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, hourHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
 	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.8f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
@@ -349,9 +349,9 @@ void display()
 	swing += swing_inc;
 	if (fabs(swing) > swing_max) swing_inc = -swing_inc;
 
-	upperHandswing -= upperHandswing_inc;
+	minuteHandswing -= minuteHandswing_inc;
 
-	lowerHandswing -= lowerHandswing_inc;
+	hourHandswing -= hourHandswing_inc;
 
 }
 
