@@ -1,9 +1,5 @@
 /*
- poslight.cpp
- Demonstrates a positional light with attenuation
- Displays a cube and a sphere and a small sphere to show the light position
- Includes controls to move the light source and rotate the view
- Iain Martin October 2014
+ Gregor Whyte Graphics Assignment 1
 */
 
 /* Link to static libraries, could define these as linker inputs in the project settings instead
@@ -52,6 +48,9 @@ GLuint texID;
 /* Position and view globals */
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
 GLfloat angle_y, angle_inc_y, angle_z, angle_inc_z;
+GLfloat swing = 0, swing_inc = 0.2f, swing_max = 10.f;
+GLfloat upperHandswing = 0, upperHandswing_inc = 0.08f;
+GLfloat lowerHandswing = 0, lowerHandswing_inc = upperHandswing_inc/12;
 GLuint drawmode;			// Defines drawing mode of sphere as points, lines or filled polygons
 
 GLfloat light_x, light_y, light_z;
@@ -167,8 +166,8 @@ void display()
 
 	 //Camera matrix
 	glm::mat4 View = glm::lookAt(
-		glm::vec3(0, 0, 4), // Camera is at (0,0,4), in World Space
-		glm::vec3(0, 0, 0), // and looks at the origin
+		glm::vec3(0, 0, 8), // Camera is at (0,0,4), in World Space
+		glm::vec3(0, -1, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 		);
 
@@ -192,10 +191,57 @@ void display()
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniform4fv(lightposID, 1, glm::value_ptr(lightpos));
 
-	/* Draw our cube*/
-	//cube.makeCube();
+	//Clock Head Cube
 
-	/* Define the model transformations for our sphere */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, -0.45));
+	model = glm::scale(model, glm::vec3(scale / 0.35f, scale / 0.35f, scale / 0.6f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cube */
+	cube.makeCube();
+
+
+	//Clock Mid Cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, -1, -0.45));
+	model = glm::scale(model, glm::vec3(scale / 0.45f, scale / 0.2f, scale / 0.7f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cube */
+	cube.makeCube();
+
+	//Clock Base Cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, -2.5, -0.45));
+	model = glm::scale(model, glm::vec3(scale / 0.35f, scale / 0.45f, scale / 0.6f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cube */
+	cube.makeCube();
+
+	//Clock Face Outer
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, -0.05));
+	model = glm::scale(model, glm::vec3(scale / 1.5f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	cylinder.drawCylinder();
+
+	//Clock Face Inner
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, 0));
 	model = glm::scale(model, glm::vec3(scale/2.f, scale/2.0f, scale/20.f));//scale equally in all axis
@@ -207,19 +253,9 @@ void display()
 	/* Draw our cylinder */
 	cylinder.drawCylinder();
 
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -0.05));
-	model = glm::scale(model, glm::vec3(scale / 1.5f, scale / 1.5f, scale / 20.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
-	/* Draw our cylinder */
-	cylinder.drawCylinder();
-	//tetrahedron.drawTetrahedron();
-	//drawSphere();
 
+	//Clock Face center
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, 0.05));
 	model = glm::scale(model, glm::vec3(scale / 25.f, scale / 25.f, scale / 25.f));//scale equally in all axis
@@ -230,9 +266,11 @@ void display()
 
 	/* Draw our cylinder */
 	cylinder.drawCylinder();
-	//tetrahedron.drawTetrahedron();
 
+
+	//Clock Upper Hand
 	model = glm::mat4(1.0f);
+	model = glm::rotate(model, upperHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
 	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
@@ -244,9 +282,11 @@ void display()
 	tetrahedron.drawTetrahedron();
 
 
+	//Clock Lower Hand
 	model = glm::mat4(1.0f);
+	model = glm::rotate(model, lowerHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, 0, 0.06));
-	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
+	model = glm::scale(model, glm::vec3(scale / 20.f, scale / 1.8f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
@@ -254,8 +294,34 @@ void display()
 
 	/* Draw our cylinder */
 	tetrahedron.drawTetrahedron();
-	//tetrahedron.drawTetrahedron();
-	//drawSphere();
+
+
+	//Clock Pendulum String
+	model = glm::mat4(1.0f);
+	model = glm::rotate(model, swing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
+	model = glm::translate(model, glm::vec3(0, -1, -0.05));
+	model = glm::scale(model, glm::vec3(scale / 20.0f, scale / 0.7f, scale / 50.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	cube.makeCube();
+
+	//Clock Pendulum Weight
+	model = glm::mat4(1.0f);
+	model = glm::rotate(model, swing, glm::vec3(0, 0, 1));
+	model = glm::translate(model, glm::vec3(0, -1.5, -0.05));
+	model = glm::scale(model, glm::vec3(scale / 6.0f, scale / 6.0f, scale / 50.f));//scale equally in all axis
+	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis //rotating in clockwise direction around z-axis
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+
+	/* Draw our cylinder */
+	cylinder.drawCylinder();
+
 
 	/* Draw a small sphere in the lightsource position to visually represent the light source */
 	model = glm::mat4(1.0f);
@@ -279,6 +345,14 @@ void display()
 	angle_x += angle_inc_x;
 	angle_y += angle_inc_y;
 	angle_z += angle_inc_z;
+
+	swing += swing_inc;
+	if (fabs(swing) > swing_max) swing_inc = -swing_inc;
+
+	upperHandswing -= upperHandswing_inc;
+
+	lowerHandswing -= lowerHandswing_inc;
+
 }
 
 /* Called whenever the window is resized. The new window size is given, in pixels. */

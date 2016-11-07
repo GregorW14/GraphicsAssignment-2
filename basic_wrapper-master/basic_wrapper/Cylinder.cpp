@@ -260,7 +260,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 
 	/* Define north pole */
 	pVertices[0] = 0; pVertices[1] = 1; pVertices[2] = 0;
-	pNormals[0] = 0; pNormals[1] = 1; pNormals[2] = 0;
+	//pNormals[0] = 0; pNormals[1] = 1; pNormals[2] = 0;
 	vnum++;
 
 	GLfloat anglestep = 360.f / numperdisk;
@@ -309,7 +309,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 	
 	/* Define south pole */
 	pVertices[vnum * 3] = 0; pVertices[vnum * 3 + 1] = -1; pVertices[vnum * 3 + 2] = 0;
-	pNormals[vnum * 3] = 0; pNormals[vnum * 3 + 1] = -1; pNormals[vnum * 3 + 2] = 0;
+	//pNormals[vnum * 3] = 0; pNormals[vnum * 3 + 1] = -1; pNormals[vnum * 3 + 2] = 0;
 
 }
 
