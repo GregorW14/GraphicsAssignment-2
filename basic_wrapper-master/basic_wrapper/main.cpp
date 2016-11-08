@@ -35,7 +35,7 @@ Cube cube;
 
 /* Define buffer object indices */
 
-GLuint program;		/* Identifier for the shader prgoram */
+GLuint program;		/* Identifier for the shader program */
 GLuint vao;			/* Vertex array (Containor) object. This is the index of the VAO that will be the container for
 					   our buffer objects */
 
@@ -50,7 +50,7 @@ GLuint textured = 0;
 /* Position and view globals */
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
 GLfloat angle_y, angle_inc_y, angle_z, angle_inc_z;
-GLfloat swing = 0, swing_inc = 0.2f, swing_max = 10.f;
+GLfloat pendulumswing = 0, pendulumswing_inc = 0.2f, pendulumswing_max = 10.f;
 GLfloat minuteHandswing = 0, minuteHandswing_inc = 0.08f;
 GLfloat hourHandswing = 0, hourHandswing_inc = minuteHandswing_inc/12;
 GLuint drawmode;			// Defines drawing mode of sphere as points, lines or filled polygons
@@ -97,7 +97,7 @@ void init(GLWrapper *glw)
 	/* Load and build the vertex and fragment shaders */
 	try
 	{
-		program = glw->LoadShader("poslight.vert", "poslight.frag");
+		program = glw->LoadShader("main.vert", "main.frag");
 	}
 	catch (std::exception &e)
 	{
@@ -318,7 +318,7 @@ void display()
 
 	//Clock Pendulum String
 	model = glm::mat4(1.0f);
-	model = glm::rotate(model, swing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
+	model = glm::rotate(model, pendulumswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
 	model = glm::translate(model, glm::vec3(0, -1, -0.05));
 	model = glm::scale(model, glm::vec3(scale / 20.0f, scale / 0.7f, scale / 50.f));//scale equally in all axis
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
@@ -332,7 +332,7 @@ void display()
 
 	//Clock Pendulum Weight
 	model = glm::mat4(1.0f);
-	model = glm::rotate(model, swing, glm::vec3(0, 0, 1));
+	model = glm::rotate(model, pendulumswing, glm::vec3(0, 0, 1));
 	model = glm::translate(model, glm::vec3(0, -1.5, -0.05));
 	model = glm::scale(model, glm::vec3(scale / 6.0f, scale / 6.0f, scale / 50.f));//scale equally in all axis
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
@@ -368,8 +368,8 @@ void display()
 	angle_y += angle_inc_y;
 	angle_z += angle_inc_z;
 
-	swing += swing_inc;
-	if (fabs(swing) > swing_max) swing_inc = -swing_inc;
+	pendulumswing += pendulumswing_inc;
+	if (fabs(pendulumswing) > pendulumswing_max) pendulumswing_inc = -pendulumswing_inc;
 
 	minuteHandswing -= minuteHandswing_inc;
 
@@ -419,6 +419,9 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 	if (key == '0') vy += 1.f;
 	if (key == 'O') vz -= 1.f;
 	if (key == 'P') vz += 1.f;
+
+	if (key == 'K') minuteHandswing_inc += 0.05f; hourHandswing_inc = minuteHandswing_inc / 12;
+	if (key == 'L') minuteHandswing_inc -= 0.05f; hourHandswing_inc = minuteHandswing_inc / 12;
 
 	if (key == 'M' && action != GLFW_PRESS)
 	{

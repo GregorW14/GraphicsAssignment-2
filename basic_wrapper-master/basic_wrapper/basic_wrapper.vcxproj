@@ -155,14 +155,14 @@
   <ItemGroup>
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cylinder.cpp" />
-    <ClCompile Include="poslight.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Tetrahedron.cpp" />
     <ClCompile Include="wrapper_glfw.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="poslight.frag" />
-    <None Include="poslight.vert" />
+    <None Include="main.frag" />
+    <None Include="main.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="clock_face.jpg" />

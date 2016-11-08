@@ -38,9 +38,6 @@
     <ClCompile Include="wrapper_glfw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="poslight.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Cylinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -53,12 +50,15 @@
     <ClCompile Include="Cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="poslight.vert">
+    <None Include="main.frag">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="poslight.frag">
+    <None Include="main.vert">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

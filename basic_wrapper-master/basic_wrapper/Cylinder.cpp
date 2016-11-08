@@ -142,16 +142,6 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 		pTopColours[i * 4 + 3] = 1.0f;
 	}
 
-	std::cout << "Vertices" << std::endl;
-	for (int i = 0; i < numvertices; i++)
-	{
-		std::cout << pTopVertices[i * 3] << "," << pTopVertices[i * 3 + 1] << "," << pTopVertices[i * 3 + 2] << std::endl;
-	}
-	std::cout << "Textures" << std::endl;
-	for (int i = 0; i < numvertices; i++)
-	{
-		std::cout << pTopTextures[i * 2] << "," << pTopTextures[i * 2 + 1]  << std::endl;
-	}
 
 	/* Generate the vertex buffer object */
 	glGenBuffers(1, &cylinderTopBufferObject);
@@ -282,7 +272,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 
 	/* Define north pole */
 	pVertices[0] = 0; pVertices[1] = 1; pVertices[2] = 0;
-	//pNormals[0] = 0; pNormals[1] = 1; pNormals[2] = 0;
+	pNormals[0] = 0; pNormals[1] = 1; pNormals[2] = 0;
 	vnum++;
 
 	GLfloat anglestep = 360.f / numperdisk;
@@ -331,7 +321,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 	
 	/* Define south pole */
 	pVertices[vnum * 3] = 0; pVertices[vnum * 3 + 1] = -1; pVertices[vnum * 3 + 2] = 0;
-	//pNormals[vnum * 3] = 0; pNormals[vnum * 3 + 1] = -1; pNormals[vnum * 3 + 2] = 0;
+	pNormals[vnum * 3] = 0; pNormals[vnum * 3 + 1] = -1; pNormals[vnum * 3 + 2] = 0;
 
 }
 
@@ -371,7 +361,6 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLf
 		pTopVertices[vnum * 3] = x; pTopVertices[vnum * 3 + 1] = y; pTopVertices[vnum * 3 + 2] = z;
 		pTopNormals[vnum * 3] = 0; pTopNormals[vnum * 3 + 1] = 1; pTopNormals[vnum * 3 + 2] = 0;
 		pTopTextures[vnum * 2] = x*0.5 + 0.5; pTopTextures[vnum * 2 + 1] = z*0.5 + 0.5;
-		std::cout << x << "," << y << "," << z << std::endl;
 
 		vnum++;
 	}
