@@ -130,7 +130,8 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 	GLfloat* pTopVertices = new GLfloat[numvertices * 3];
 	GLfloat* pTopNormals = new GLfloat[numvertices * 3];
 	GLfloat* pTopColours = new GLfloat[numvertices * 4];
-	makeCylinderTop(pTopVertices, pTopNormals, numperdisk);
+	GLfloat* pTopTextures = new GLfloat[numvertices * 2];
+	makeCylinderTop(pTopVertices, pTopNormals, pTopTextures, numperdisk);
 
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
@@ -139,6 +140,17 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 		pTopColours[i * 4 + 1] = 1.0f;
 		pTopColours[i * 4 + 2] = 1.0f;
 		pTopColours[i * 4 + 3] = 1.0f;
+	}
+
+	std::cout << "Vertices" << std::endl;
+	for (int i = 0; i < numvertices; i++)
+	{
+		std::cout << pTopVertices[i * 3] << "," << pTopVertices[i * 3 + 1] << "," << pTopVertices[i * 3 + 2] << std::endl;
+	}
+	std::cout << "Textures" << std::endl;
+	for (int i = 0; i < numvertices; i++)
+	{
+		std::cout << pTopTextures[i * 2] << "," << pTopTextures[i * 2 + 1]  << std::endl;
 	}
 
 	/* Generate the vertex buffer object */
@@ -157,6 +169,12 @@ GLuint Cylinder::makeCylinderTopVBO(GLuint numperdisk)
 	glGenBuffers(1, &cylinderTopColours);
 	glBindBuffer(GL_ARRAY_BUFFER, cylinderTopColours);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 4, pTopColours, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/* Store the colours in a buffer object */
+	glGenBuffers(1, &cylinderTopTextures);
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderTopTextures);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 2, pTopTextures, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Calculate the number of indices in our index array and allocate memory for it */
@@ -317,7 +335,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 
 }
 
-void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLuint numperdisk)
+void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLfloat *pTopTextures, GLuint numperdisk)
 {
 	GLfloat DEG_TO_RADIANS = 3.141592f / 180.f;
 	GLuint vnum = 0;
@@ -328,6 +346,7 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLu
 	/* Define north pole */
 	pTopVertices[0] = 0; pTopVertices[1] = 1; pTopVertices[2] = 0;
 	pTopNormals[0] = 0; pTopNormals[1] = 1; pTopNormals[2] = 0;
+	pTopTextures[0] = 0.5; pTopTextures[1] = 0.5;
 	vnum++;
 
 	GLfloat anglestep = 360.f / numperdisk;
@@ -351,6 +370,9 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLu
 		/* Define the vertex */
 		pTopVertices[vnum * 3] = x; pTopVertices[vnum * 3 + 1] = y; pTopVertices[vnum * 3 + 2] = z;
 		pTopNormals[vnum * 3] = 0; pTopNormals[vnum * 3 + 1] = 1; pTopNormals[vnum * 3 + 2] = 0;
+		pTopTextures[vnum * 2] = x*0.5 + 0.5; pTopTextures[vnum * 2 + 1] = z*0.5 + 0.5;
+		std::cout << x << "," << y << "," << z << std::endl;
+
 		vnum++;
 	}
 }
@@ -458,6 +480,10 @@ void Cylinder::drawCylinder()
 		glBindBuffer(GL_ARRAY_BUFFER, cylinderTopColours);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ARRAY_BUFFER, cylinderTopTextures);
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(3);
 
 		glPointSize(3.f);
 

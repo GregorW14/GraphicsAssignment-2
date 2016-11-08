@@ -45,6 +45,7 @@ GLuint colourmode;	/* Index of a uniform to switch the colour mode in the vertex
 GLuint emitmode;
 
 GLuint texID;
+GLuint textured = 0;
 
 /* Position and view globals */
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
@@ -57,7 +58,7 @@ GLuint drawmode;			// Defines drawing mode of sphere as points, lines or filled 
 GLfloat light_x, light_y, light_z;
 
 /* Uniforms*/
-GLuint modelID, viewID, projectionID, lightposID, normalmatrixID;
+GLuint modelID, viewID, projectionID, lightposID, normalmatrixID, texturedID;
 GLuint colourmodeID, emitmodeID;
 
 GLfloat aspect_ratio;		/* Aspect ratio of the window defined in the reshape callback*/
@@ -105,29 +106,29 @@ void init(GLWrapper *glw)
 		exit(0);
 	}
 
-	//try
-	//{
-	//	/* Not actually needed if using one texture at a time */
-	//	glActiveTexture(GL_TEXTURE0);
+	try
+	{
+		/* Not actually needed if using one texture at a time */
+		glActiveTexture(GL_TEXTURE0);
 
-	//	/* load an image file directly as a new OpenGL texture */
-	//	texID = SOIL_load_OGL_texture("img.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-	//		SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		/* load an image file directly as a new OpenGL texture */
+		texID = SOIL_load_OGL_texture("clock_face.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+		printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+		/* check for an error during the load process */
+		if (texID == 0)
+		{
+			printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+		}
 
-	//	/* check for an error during the load process */
-	//	if (texID == 0)
-	//	{
-	//		printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
-	//	}
-
-	//	/* Standard bit of code to enable a uniform sampler for our texture */
-	//	int loc = glGetUniformLocation(program, "tex1");
-	//	if (loc >= 0) glUniform1i(loc, 0);
-	//}
-	//catch (std::exception &e)
-	//{
-	//	printf("\nImage file loading failed.");
-	//}
+		/* Standard bit of code to enable a uniform sampler for our texture */
+		int loc = glGetUniformLocation(program, "tex1");
+		if (loc >= 0) glUniform1i(loc, 0);
+	}
+	catch (std::exception &e)
+	{
+		printf("\nImage file loading failed.");
+	}
 
 	/* Define uniforms to send to vertex shader */
 	modelID = glGetUniformLocation(program, "model");
@@ -137,6 +138,7 @@ void init(GLWrapper *glw)
 	projectionID = glGetUniformLocation(program, "projection");
 	lightposID = glGetUniformLocation(program, "lightpos");
 	normalmatrixID = glGetUniformLocation(program, "normalmatrix");
+	texturedID = glGetUniformLocation(program, "textured");
 }
 
 /* Called to update the display. Note that this function is called in the event loop in the wrapper
@@ -188,6 +190,7 @@ void display()
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 	glUniform1ui(colourmodeID, colourmode);
 	glUniform1ui(emitmodeID, emitmode);
+	glUniform1ui(texturedID, textured);
 	glUniformMatrix4fv(viewID, 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(projectionID, 1, GL_FALSE, &Projection[0][0]);
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
@@ -247,7 +250,11 @@ void display()
 	/* Draw our cylinder */
 	cylinder.drawCylinder();
 
+
+	glUniform1ui(texturedID, 1);
+
 	//Clock Face Inner
+	glBindTexture(GL_TEXTURE_2D, texID);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, 0));
 	model = glm::scale(model, glm::vec3(scale/2.f, scale/2.0f, scale/20.f));//scale equally in all axis
@@ -259,6 +266,9 @@ void display()
 
 	/* Draw our cylinder */
 	cylinder.drawCylinder();
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glUniform1ui(texturedID, 0);
 
 
 

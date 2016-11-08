@@ -63,7 +63,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="img.png">
+    <Image Include="clock_face.jpg">
       <Filter>Source Files</Filter>
     </Image>
   </ItemGroup>

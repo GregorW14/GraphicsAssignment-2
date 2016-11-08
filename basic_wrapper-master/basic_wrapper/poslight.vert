@@ -5,11 +5,14 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 colour;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in vec2 texcoord;
 
 // This is the output vertex colour sent to the rasterizer
 out vec3 N, L, emissive;
 out vec4 P;
 out vec4 diffuse_albedo; // This is the vertex colour, used to handle the colourmode change
+out vec2 ftexcoord;
+flat out uint ftextured;
 
 
 // These are the uniforms that are defined in the application
@@ -18,6 +21,7 @@ uniform mat3 normalmatrix;
 uniform uint colourmode;
 uniform vec4 lightpos;
 uniform uint emitmode;
+uniform uint textured;
 
 
 
@@ -44,6 +48,8 @@ void main()
 		diffuse_albedo = vec4(0.2, 0.3, 0.9, 1.0);
 
 	gl_Position = (projection * view * model) * position_h;
+	ftexcoord = texcoord;
+	ftextured = textured;
 }
 
 
