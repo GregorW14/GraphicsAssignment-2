@@ -17,11 +17,7 @@ vec3 specular_albedo = vec3(1.0, 0.8, 0.6);
 vec3 global_ambient = vec3(0.05, 0.05, 0.05);
 int  shininess = 8;
 
-<<<<<<< HEAD
 uniform sampler2D tex1;	
-=======
-uniform sampler2D tex1;	// This is the texture objec
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 
 void main()
 {
@@ -45,12 +41,7 @@ void main()
 
 	vec3 ambient = diffuse_albedo.xyz * 0.2;
 
-<<<<<<< HEAD
-=======
-	// Calculate the output colour, includung attenuation on the diffuse and specular components
-	// Note that you may want to exclude the ambient form the attenuation factor so objects
-	// are always visible, or include a global ambient
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
+
 	vec3 texture_diffuse = vec3((ambient + diffuse) * texcolour.xyz);
 
 	if(ftextured == 1)

@@ -113,11 +113,7 @@ void init(GLWrapper *glw)
 
 		/* load an image file directly as a new OpenGL texture */
 		texID = SOIL_load_OGL_texture("clock_face.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-<<<<<<< HEAD
 			SOIL_FLAG_MIPMAPS | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-=======
-			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 		printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
 		/* check for an error during the load process */
 		if (texID == 0)
@@ -208,10 +204,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -226,10 +218,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -243,10 +231,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -260,10 +244,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -277,18 +257,11 @@ void display()
 	glBindTexture(GL_TEXTURE_2D, texID);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, 0));
-<<<<<<< HEAD
 	model = glm::scale(model, glm::vec3(scale / 2.f, scale / 2.0f, scale / 20.f));//scale equally in all axis
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
 	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
-	model = glm::scale(model, glm::vec3(scale/2.f, scale/2.0f, scale/20.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -307,10 +280,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -326,10 +295,6 @@ void display()
 	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -345,10 +310,6 @@ void display()
 	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -364,10 +325,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -382,10 +339,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis //rotating in clockwise direction around z-axis
-<<<<<<< HEAD
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-=======
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -412,12 +365,6 @@ void display()
 	glUseProgram(0);
 
 	/* Modify our animation variables */
-<<<<<<< HEAD
-=======
-	angle_x += angle_inc_x;
-	angle_y += angle_inc_y;
-	angle_z += angle_inc_z;
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
 
 	pendulumswing += pendulumswing_inc;
 	if (fabs(pendulumswing) > pendulumswing_max) pendulumswing_inc = -pendulumswing_inc;
@@ -444,23 +391,7 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-<<<<<<< HEAD
-=======
-	if (key == 'Q') angle_inc_x -= 0.05f;
-	if (key == 'W') angle_inc_x += 0.05f;
-	if (key == 'E') angle_inc_y -= 0.05f;
-	if (key == 'R') angle_inc_y += 0.05f;
-	if (key == 'T') angle_inc_z -= 0.05f;
-	if (key == 'Y') angle_inc_z += 0.05f;
-	if (key == 'A') scale -= 0.02f;
-	if (key == 'S') scale += 0.02f;
-	if (key == 'Z') x -= 0.05f;
-	if (key == 'X') x += 0.05f;
-	if (key == 'C') y -= 0.05f;
-	if (key == 'V') y += 0.05f;
-	if (key == 'B') z -= 0.05f;
-	if (key == 'N') z += 0.05f;
->>>>>>> 5b57dd635bc355abe51f22da01b578f21cfce229
+
 	if (key == '1') light_x -= 0.05f;
 	if (key == '2') light_x += 0.05f;
 	if (key == '3') light_y -= 0.05f;
