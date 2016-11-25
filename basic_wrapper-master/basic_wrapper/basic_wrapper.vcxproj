@@ -148,7 +148,9 @@
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="object_ldr.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="terrain_object.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="wrapper_glfw.h" />
   </ItemGroup>
@@ -156,7 +158,9 @@
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="object_ldr.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="terrain_object.cpp" />
     <ClCompile Include="Tetrahedron.cpp" />
     <ClCompile Include="wrapper_glfw.cpp" />
   </ItemGroup>

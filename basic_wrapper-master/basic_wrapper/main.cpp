@@ -18,6 +18,7 @@ if you prefer */
 #include "Sphere.h"
 #include "Cube.h"
 #include "Common.h"
+#include "terrain_object.h"
 
 //include soil
 #include "soil.h"
@@ -46,6 +47,8 @@ GLuint emitmode;
 
 GLuint texID;
 GLuint textured = 0;
+
+terrain_object terrain;	// Create a global terrain object
 
 /* Position and view globals */
 GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
@@ -93,6 +96,8 @@ void init(GLWrapper *glw)
 	sphere.init();
 	tetrahedron.init();
 	cube.makeCube();
+	terrain.createTerrain(100, 100, 200.f, 200.f);
+	terrain.createObject();
 
 	/* Load and build the vertex and fragment shaders */
 	try
@@ -170,7 +175,7 @@ void display()
 
 	 //Camera matrix
 	glm::mat4 View = glm::lookAt(
-		glm::vec3(0, 0, 8), // Camera is at (0,0,4), in World Space
+		glm::vec3(0, 0, 20), // Camera is at (0,0,4), in World Space
 		glm::vec3(0, -1, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 		);
@@ -239,6 +244,13 @@ void display()
 
 	/* Draw our cube */
 	cube.drawCube();
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, -4.5, -0.45));
+	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
+	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
+	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+	terrain.drawObject(drawmode);
 
 	//Clock Face Outer
 	model = glm::mat4(1.0f);
@@ -382,6 +394,7 @@ void display()
 
 	hourHandswing -= hourHandswing_inc;
 
+
 }
 
 /* Called whenever the window is resized. The new window size is given, in pixels. */
@@ -399,6 +412,7 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+
 
 	if (key == '1') light_x -= 0.05f;
 	if (key == '2') light_x += 0.05f;
