@@ -209,7 +209,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -224,7 +223,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -238,7 +236,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -259,7 +256,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -296,7 +292,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -312,7 +307,6 @@ void display()
 	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -328,7 +322,6 @@ void display()
 	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -344,7 +337,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
@@ -359,7 +351,6 @@ void display()
 	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
 	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
 	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
 	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
