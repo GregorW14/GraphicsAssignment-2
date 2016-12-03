@@ -44,8 +44,9 @@ GLuint Sphere::makeSphereVBO(GLuint numlats, GLuint numlongs)
 	/* Calculate the number of vertices required in sphere */
 	GLuint numvertices = 2 + ((numlats - 1) * numlongs);
 	GLfloat* pVertices = new GLfloat[numvertices * 3];
+	GLfloat* pTexCoords = new GLfloat[numvertices * 2];
 	GLfloat* pColours = new GLfloat[numvertices * 4];
-	makeUnitSphere(pVertices, numlats, numlongs);
+	makeUnitSphere(pVertices, pTexCoords, numlats, numlongs);
 
 	/* Define colours as the x,y,z components of the sphere vertices */
 	for (i = 0; i < numvertices; i++)
@@ -72,6 +73,12 @@ GLuint Sphere::makeSphereVBO(GLuint numlats, GLuint numlongs)
 	glGenBuffers(1, &sphereColours);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereColours);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 4, pColours, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/* Store the texture coords in a buffer object */
+	glGenBuffers(1, &sphereTexCoords);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereTexCoords);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 2, pTexCoords, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Calculate the number of indices in our index array and allocate memory for it */
@@ -115,6 +122,7 @@ GLuint Sphere::makeSphereVBO(GLuint numlats, GLuint numlongs)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numindices * sizeof(GLuint), pindices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	delete[] pTexCoords;
 	delete[] pindices;
 	delete[] pColours;
 	delete[] pVertices;
@@ -125,7 +133,7 @@ GLuint Sphere::makeSphereVBO(GLuint numlats, GLuint numlongs)
 /* Define the vertex positions for a sphere. The array of vertices must have previosuly
 been created.
 */
-void  Sphere::makeUnitSphere(GLfloat *pVertices, GLuint numlats, GLuint numlongs)
+void  Sphere::makeUnitSphere(GLfloat *pVertices, GLfloat *pTexCoords, GLuint numlats, GLuint numlongs)
 {
 	GLfloat DEG_TO_RADIANS = 3.141592f / 180.f;
 	GLuint vnum = 0;
@@ -133,16 +141,17 @@ void  Sphere::makeUnitSphere(GLfloat *pVertices, GLuint numlats, GLuint numlongs
 
 	/* Define north pole */
 	pVertices[0] = 0; pVertices[1] = 0; pVertices[2] = 1.f;
+	pTexCoords[0] = 0.5;	pTexCoords[1] = 1.0;
 	vnum++;
 
 	GLfloat latstep = 180.f / numlats;
-	GLfloat longstep = 360.f / numlongs;
+	GLfloat longstep = 360.f / (numlongs-1);
 
 	/* Define vertices along latitude lines */
 	for (GLfloat lat = 90.f - latstep; lat > -90.f; lat -= latstep)
 	{
 		lat_radians = lat * DEG_TO_RADIANS;
-		for (GLfloat lon = -180.f; lon < 180.f; lon += longstep)
+		for (GLfloat lon = -180.f; lon <= (180.f + longstep / 10.f); lon += longstep)
 		{
 			lon_radians = lon * DEG_TO_RADIANS;
 
@@ -152,11 +161,18 @@ void  Sphere::makeUnitSphere(GLfloat *pVertices, GLuint numlats, GLuint numlongs
 
 			/* Define the vertex */
 			pVertices[vnum * 3] = x; pVertices[vnum * 3 + 1] = y; pVertices[vnum * 3 + 2] = z;
+			float u = (lon + 180.f) / 360.f;
+			float v = (lat + 90.f) / 180.f;
+
+			pTexCoords[vnum * 2] = u;
+			pTexCoords[vnum * 2 + 1] = v;
+
 			vnum++;
 		}
 	}
 	/* Define south pole */
 	pVertices[vnum * 3] = 0; pVertices[vnum * 3 + 1] = 0; pVertices[vnum * 3 + 2] = -1.f;
+	pTexCoords[vnum * 2] = 0.5; pTexCoords[vnum * 2 + 1] = 0.f;
 }
 
 /* Draws the sphere form the previously defined vertex and index buffers */
@@ -179,40 +195,36 @@ void Sphere::drawSphere()
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
+	/* Bind the sphere texture coordinates */
+	glBindBuffer(GL_ARRAY_BUFFER, sphereTexCoords);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(3);
+
 	glPointSize(3.f);
 
-	// Enable this line to show model in wireframe
-	//if (drawmode == 1)
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//if (drawmode == 2)
-	//{
-	//	glDrawArrays(GL_POINTS, 0, numspherevertices);
-	//}
-	//else
-	//{
-		/* Bind the indexed vertex buffer */
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		/* Draw the north pole regions as a triangle  */
-		glDrawElements(GL_TRIANGLE_FAN, numlongs + 2, GL_UNSIGNED_INT, (GLvoid*)(0));
 
-		/* Calculate offsets into the indexed array. Note that we multiply offsets by 4
-		because it is a memory offset the indices are type GLuint which is 4-bytes */
-		GLuint lat_offset_jump = (numlongs * 2) + 2;
-		GLuint lat_offset_start = numlongs + 2;
-		GLuint lat_offset_current = lat_offset_start * 4;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
-		/* Draw the triangle strips of latitudes */
-		for (i = 0; i < numlats - 2; i++)
-		{
-			glDrawElements(GL_TRIANGLE_STRIP, numlongs * 2 + 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
-			lat_offset_current += (lat_offset_jump * 4);
-		}
-		/* Draw the south pole as a triangle fan */
-		glDrawElements(GL_TRIANGLE_FAN, numlongs + 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
+	/* Draw the north pole regions as a triangle  */
+	glDrawElements(GL_TRIANGLE_FAN, numlongs + 2, GL_UNSIGNED_INT, (GLvoid*)(0));
+
+	/* Calculate offsets into the indexed array. Note that we multiply offsets by 4
+	because it is a memory offset the indices are type GLuint which is 4-bytes */
+	GLuint lat_offset_jump = (numlongs * 2) + 2;
+	GLuint lat_offset_start = numlongs + 2;
+	GLuint lat_offset_current = lat_offset_start * 4;
+
+	/* Draw the triangle strips of latitudes */
+	for (i = 0; i < numlats - 2; i++)
+	{
+		glDrawElements(GL_TRIANGLE_STRIP, numlongs * 2 + 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
+		lat_offset_current += (lat_offset_jump * 4);
 	}
+	/* Draw the south pole as a triangle fan */
+	glDrawElements(GL_TRIANGLE_FAN, numlongs + 2, GL_UNSIGNED_INT, (GLvoid*)(lat_offset_current));
+}
 
 

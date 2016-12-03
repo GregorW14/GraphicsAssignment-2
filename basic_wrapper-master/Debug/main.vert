@@ -27,25 +27,23 @@ uniform uint textured;
 
 void main()
 {
-	 emissive = vec3(0);				// Create a vec3(0, 0, 0) for our emmissive light
+	emissive = vec3(0);				// Create a vec3(0, 0, 0) for our emmissive light
 	vec4 position_h = vec4(position, 1.0);	// Convert the (x,y,z) position to homogeneous coords (x,y,z,w)			
 	vec3 light_pos3 = lightpos.xyz;			
 
 	// Define our vectors to calculate diffuse and specular lighting
 	mat4 mv_matrix = view * model;		// Calculate the model-view transformation
 	P = mv_matrix * position_h;	// Modify the vertex position (x, y, z, w) by the model-view transformation
-	N = normalmatrix * normal;		// Modify the normals by the normal-matrix (i.e. to model-view (or eye) coordinates )
+	N = normalize(normalmatrix * normal);		// Modify the normals by the normal-matrix (i.e. to model-view (or eye) coordinates )
 	L = light_pos3 - P.xyz;		// Calculate the vector from the light position to the vertex in eye space
 		
 	//If emitmode is 1 then we enable emmissive lighting
-	if (emitmode == 1) 
-		emissive = vec3(1.0, 1.0, 0.8); 
 	
 	// Switch the vertex colour based on the colourmode
 	if (colourmode == 1)
 		diffuse_albedo = colour;
 	else
-		diffuse_albedo = vec4(0.2, 0.3, 0.9, 1.0);
+		diffuse_albedo = vec4(0.4, 0.2, 0.0, 1.0);
 
 	gl_Position = (projection * view * model) * position_h;
 	ftexcoord = texcoord;

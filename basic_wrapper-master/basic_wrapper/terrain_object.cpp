@@ -13,10 +13,11 @@ terrain_object::terrain_object()
 {
 	attribute_v_coord = 0;
 	attribute_v_normal = 2;
+	attribute_v_texcoords = 3;
 	xsize = 0;	// Set to zero because we havent' created the heightfield array yet
 	zsize = 0;	
 	perlin_octaves = 4;
-	height_scale = 1.f;
+	height_scale = 0.6f;
 }
 
 
@@ -38,6 +39,11 @@ void terrain_object::createObject()
 	glGenBuffers(1, &vbo_mesh_normals);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_mesh_normals);
 	glBufferData(GL_ARRAY_BUFFER, xsize * zsize * sizeof(glm::vec3), &(normals[0]), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &vbo_mesh_texcoords);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_mesh_texcoords);
+	glBufferData(GL_ARRAY_BUFFER, xsize * zsize * sizeof(glm::vec2), &(texcoords[0]), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Generate a buffer for the indices
@@ -77,6 +83,16 @@ void terrain_object::drawObject(int drawmode)
 		0,                  // no extra data between each position
 		0                   // offset of first element
 		);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_mesh_texcoords);
+	glVertexAttribPointer(
+		attribute_v_texcoords, // attribute
+		2,                  // number of elements per vertex, here (x,y,z)
+		GL_FLOAT,           // the type of each element
+		GL_FALSE,           // take our values as-is
+		0,                  // no extra data between each position
+		0                   // offset of first element
+	);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_mesh_elements); 
 	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
@@ -148,15 +164,17 @@ void terrain_object::createTerrain(GLuint xp, GLuint zp, GLfloat xs, GLfloat zs)
 	zsize = zp;
 	width = xs;
 	height = zs;
-	GLfloat frequency = .4f;
+
+	GLfloat frequency = 1.f;
 
 	/* Scale heights in relation to the terrain size */
-	height_scale = xs;
+	height_scale = xs/4;
 
 	/* Create array of vertices */
 	GLuint numvertices = xsize * zsize;
 	vertices = new glm::vec3[numvertices];
 	normals  = new glm::vec3[numvertices];
+	texcoords = new glm::vec2[numvertices];
 
 	/* First calculate the noise array which we'll use for our vertex height values */
 	calculateNoise(frequency, 2.f);
@@ -180,8 +198,19 @@ void terrain_object::createTerrain(GLuint xp, GLuint zp, GLfloat xs, GLfloat zs)
 		for (GLuint z = 0; z < zsize; z++)
 		{
 			GLfloat height = noise[(x*zsize + z) * 4+3];
-			vertices[x*xsize + z] = glm::vec3(xpos, (height-0.5f)*height_scale, zpos);
+
+
+			if ((x > xsize / 8 * 3.8) && (x < xsize/8 * 5) && (z > zsize/8 * 3) && (z < zsize/8 * 5))
+			{
+				vertices[x*xsize + z] = glm::vec3(xpos, -3, zpos);
+			}
+			else
+			{
+				vertices[x*xsize + z] = glm::vec3(xpos, (height - 0.45f)*height_scale, zpos);
+			}
+
 			normals[x*xsize + z]  = glm::vec3(0, 1.0f, 0);		// Normals for a flat surface
+			texcoords[x*xsize + z] = glm::vec2((GLfloat)x/xsize, (GLfloat)z/zsize);
 			zpos += zpos_step;
 		}
 		xpos += xpos_step;

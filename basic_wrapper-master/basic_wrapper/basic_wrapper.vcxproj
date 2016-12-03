@@ -148,7 +148,9 @@
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="LSystem.h" />
     <ClInclude Include="object_ldr.h" />
+    <ClInclude Include="points2.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="terrain_object.h" />
     <ClInclude Include="Tetrahedron.h" />
@@ -157,8 +159,10 @@
   <ItemGroup>
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="LSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="object_ldr.cpp" />
+    <ClCompile Include="points2.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="terrain_object.cpp" />
     <ClCompile Include="Tetrahedron.cpp" />
@@ -167,9 +171,10 @@
   <ItemGroup>
     <None Include="main.frag" />
     <None Include="main.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="clock_face.jpg" />
+    <None Include="point_sprites.vert" />
+    <None Include="point_sprites.frag" />
+    <None Include="skybox.frag" />
+    <None Include="skybox.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,7 +2,7 @@
 class Cube
 {
 
-	GLuint cubeBufferObject, cubeColours, cubeNormals;
+	GLuint cubeBufferObject, cubeColours, cubeNormals, texCoordsObject;
 	GLuint elementbuffer;
 
 	GLuint numlats, numlongs;

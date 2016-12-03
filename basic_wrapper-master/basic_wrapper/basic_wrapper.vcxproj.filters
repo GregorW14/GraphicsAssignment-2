@@ -39,6 +39,12 @@
     <ClInclude Include="object_ldr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="points2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wrapper_glfw.cpp">
@@ -65,6 +71,12 @@
     <ClCompile Include="object_ldr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="points2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="main.frag">
@@ -73,10 +85,17 @@
     <None Include="main.vert">
       <Filter>Source Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="clock_face.jpg">
+    <None Include="point_sprites.vert">
       <Filter>Source Files</Filter>
-    </Image>
+    </None>
+    <None Include="point_sprites.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="skybox.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="skybox.frag">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -25,14 +25,17 @@ public:
 
 	glm::vec3 *vertices;
 	glm::vec3 *normals;
+	glm::vec2 *texcoords;
 	std::vector<GLushort> elements;
 	GLfloat* noise;
 
 	GLuint vbo_mesh_vertices;
 	GLuint vbo_mesh_normals;
+	GLuint vbo_mesh_texcoords;
 	GLuint ibo_mesh_elements;
 	GLuint attribute_v_coord;
 	GLuint attribute_v_normal;
+	GLuint attribute_v_texcoords;
 
 	GLuint xsize;
 	GLuint zsize;

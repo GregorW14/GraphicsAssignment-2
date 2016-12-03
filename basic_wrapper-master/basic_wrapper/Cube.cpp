@@ -81,47 +81,47 @@ GLfloat vertexPositions[] =
 
 /* Manually specified colours for our cube */
 float vertexColours[] = {
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
 
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
 
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
 
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
 
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 0.0f, 1.0f, 1.0f,
 
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
-	0.3f, 0.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
 };
 
 /* Manually specified normals for our cube */
@@ -139,6 +139,61 @@ GLfloat normals[] =
 	0, -1.f, 0, 0, -1.f, 0, 0, -1.f, 0,
 	0, 1.f, 0, 0, 1.f, 0, 0, 1.f, 0,
 	0, 1.f, 0, 0, 1.f, 0, 0, 1.f, 0,
+};
+
+GLfloat texcoords[] =
+{
+	0, 1.f,
+	0, 0,
+	1.f, 0,
+
+	1.f, 0,
+	1.f, 1.f,
+	0, 1.f,
+
+	1.f, 0,
+	0, 0,
+	1.f, 1.f,
+
+	0, 0,
+	0, 1.f,
+	1.f, 1.f,
+
+	1.f, 0,
+	0, 0,
+	1.f, 1.f,
+
+	0, 0,
+	0, 1.f,
+	1.f, 1.f,
+
+	1.f, 0,
+	0, 0,
+	1.f, 1.f,
+
+	0, 0,
+	0, 1.f,
+	1.f, 1.f,
+
+	0, 1.f,
+	0, 0,
+	1.f, 0,
+
+	1.f, 0,
+	1.f, 1.f,
+	0, 1.f,
+
+	0, 1.f,
+	0, 0,
+	1.f, 0,
+
+	1.f, 0,
+	1.f, 1.f,
+	0, 1.f,
+
+	0, 1.f,
+	0, 0,
+	1.f, 0,
 };
 
 void Cube::init()
@@ -166,6 +221,12 @@ void Cube::makeCube()
 	glBufferData(GL_ARRAY_BUFFER, 36 * sizeof(glm::vec3), normals, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	/* Create the texture coordinate  buffer for the cube */
+	glGenBuffers(1, &texCoordsObject);
+	glBindBuffer(GL_ARRAY_BUFFER, texCoordsObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 }
 
 void Cube::drawCube()
@@ -184,6 +245,11 @@ void Cube::drawCube()
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeNormals);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	/* Bind cube texture coords. Note that this is in attribute index 3 */
+	glEnableVertexAttribArray(3);
+	glBindBuffer(GL_ARRAY_BUFFER, texCoordsObject);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	if (drawmode == 1)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

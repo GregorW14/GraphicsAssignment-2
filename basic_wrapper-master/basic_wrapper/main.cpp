@@ -19,6 +19,10 @@ if you prefer */
 #include "Cube.h"
 #include "Common.h"
 #include "terrain_object.h"
+#include "points2.h"
+#include "object_ldr.h"
+#include "LSystem.h"
+#include <stack>
 
 //include soil
 #include "soil.h"
@@ -33,10 +37,12 @@ Cylinder cylinder;
 Sphere sphere;
 Tetrahedron tetrahedron;
 Cube cube;
+LSystem lsystem;
+GLuint level;
 
 /* Define buffer object indices */
 
-GLuint program;		/* Identifier for the shader program */
+GLuint program[3];		/* Identifier for the shader program */
 GLuint vao;			/* Vertex array (Containor) object. This is the index of the VAO that will be the container for
 					   our buffer objects */
 
@@ -45,13 +51,12 @@ GLuint colourmode;	/* Index of a uniform to switch the colour mode in the vertex
 					  your vertex shader. */
 GLuint emitmode;
 
-GLuint texID;
-GLuint textured = 0;
+GLuint textured;
 
 terrain_object terrain;	// Create a global terrain object
 
 /* Position and view globals */
-GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz;
+GLfloat angle_x, angle_inc_x, x, scale, z, y, vx, vy, vz, camera_x, camera_y, camera_z, ry;
 GLfloat angle_y, angle_inc_y, angle_z, angle_inc_z;
 GLfloat pendulumswing = 0, pendulumswing_inc = 0.2f, pendulumswing_max = 10.f;
 GLfloat minuteHandswing = 0, minuteHandswing_inc = 0.08f;
@@ -59,13 +64,27 @@ GLfloat hourHandswing = 0, hourHandswing_inc = minuteHandswing_inc/12;
 GLuint drawmode;			// Defines drawing mode of sphere as points, lines or filled polygons
 
 GLfloat light_x, light_y, light_z;
+object_ldr bed;
+object_ldr plants;
+
+GLfloat point_sizeID;
+
 
 /* Uniforms*/
-GLuint modelID, viewID, projectionID, lightposID, normalmatrixID, texturedID;
-GLuint colourmodeID, emitmodeID;
+GLuint modelID[3], viewID[3], projectionID[3], lightposID, normalmatrixID[3], texturedID[3];
+GLuint colourmodeID[3], emitmodeID[3];
 
 GLfloat aspect_ratio;		/* Aspect ratio of the window defined in the reshape callback*/
 
+points2 *point_anim;
+GLfloat speed;
+GLfloat maxdist;
+GLfloat point_size;		// Used to adjust point size in the vertex shader
+GLboolean night;
+
+GLuint textureID, textureID2, textureID3, textureID4, textureID5, textureID6, textureID7, textureID8, textureID9, textureID10, textureID11, textureID12;
+
+GLuint numlats, numlongs;	//Define the resolution of the sphere object
 /*
 This function is called before entering the main rendering loop.
 Use it for all your initialisation stuff
@@ -76,13 +95,19 @@ void init(GLWrapper *glw)
 	x = 0.05f;
 	y = 0;
 	z = 0;
-	vx = 0; vx = 0, vz = 0;
-	light_x = .5; light_y = .5; light_z = .5;
+	ry = -2.8;
+	night = true;
+	camera_x = 6;
+	camera_y = 5;
+	camera_z = 30;
+	vx = -1.5; vx = 0, vz = 0;
+	light_x = 1; light_y = 15; light_z = 0;
 	angle_x = angle_y = angle_z = 0;
 	angle_inc_x = angle_inc_y = angle_inc_z = 0;
 	scale = 1.f;
 	aspect_ratio = 1.3333f;
-	colourmode = 0; emitmode = 0;
+	colourmode = 0; emitmode = 0, textured = 1;
+
 
 
 	// Generate index (name) for one vertex array object
@@ -96,13 +121,24 @@ void init(GLWrapper *glw)
 	sphere.init();
 	tetrahedron.init();
 	cube.makeCube();
+	lsystem.init();
 	terrain.createTerrain(100, 100, 200.f, 200.f);
 	terrain.createObject();
+
+	bed.load_obj("bed.obj");
+	bed.smoothNormals();
+	bed.createObject();
+
+	plants.load_obj("plants.obj");
+	plants.smoothNormals();
+	plants.createObject();
 
 	/* Load and build the vertex and fragment shaders */
 	try
 	{
-		program = glw->LoadShader("main.vert", "main.frag");
+		program[0] = glw->LoadShader("main.vert", "main.frag");
+		program[1] = glw->LoadShader("point_sprites.vert", "point_sprites.frag");
+		program[2] = glw->LoadShader("skybox.vert", "skybox.frag");
 	}
 	catch (std::exception &e)
 	{
@@ -113,21 +149,105 @@ void init(GLWrapper *glw)
 
 	try
 	{
-		/* Not actually needed if using one texture at a time */
-		glActiveTexture(GL_TEXTURE0);
-
 		/* load an image file directly as a new OpenGL texture */
-		texID = SOIL_load_OGL_texture("clock_face.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_MIPMAPS | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-		printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+		textureID = SOIL_load_OGL_texture("grass.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID2 = SOIL_load_OGL_texture("brick.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID3 = SOIL_load_OGL_texture("door.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID4 = SOIL_load_OGL_texture("brass.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID5 = SOIL_load_OGL_texture("woodroof.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID6 = SOIL_load_OGL_texture("moon.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID7 = SOIL_load_OGL_texture("carpet.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID8 = SOIL_load_OGL_texture("night.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+		textureID9 = SOIL_load_OGL_texture("skybox.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
+		textureID10 = SOIL_load_OGL_texture("sun.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+		textureID11 = SOIL_load_OGL_texture("bark.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+		textureID12 = SOIL_load_OGL_texture("wood.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB |
+			SOIL_FLAG_COMPRESS_TO_DXT);
+
 		/* check for an error during the load process */
-		if (texID == 0)
+		if (textureID == 0)
 		{
-			printf("TexID SOIL loading error: '%s'\n", SOIL_last_result());
+			printf("textureID SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID2 == 0)
+		{
+			printf("textureID2 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID3 == 0)
+		{
+			printf("textureID3 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID4 == 0)
+		{
+			printf("textureID4 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID5 == 0)
+		{
+			printf("textureID5 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID6 == 0)
+		{
+			printf("textureID6 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID7 == 0)
+		{
+			printf("textureID7 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID8 == 0)
+		{
+			printf("textureID8 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID9 == 0)
+		{
+			printf("textureID9 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID10 == 0)
+		{
+			printf("textureID10 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID11 == 0)
+		{
+			printf("textureID11 SOIL loading error: '%s'\n", SOIL_last_result());
+		}
+		if (textureID12 == 0)
+		{
+			printf("textureID12 SOIL loading error: '%s'\n", SOIL_last_result());
 		}
 
-		/* Standard bit of code to enable a uniform sampler for our texture */
-		int loc = glGetUniformLocation(program, "tex1");
+		// This is the location of the texture object (TEXTURE0), i.e. tex1 will be the name
+		// of the sampler in the fragment shader
+		int loc = glGetUniformLocation(program[0], "tex1");
 		if (loc >= 0) glUniform1i(loc, 0);
 	}
 	catch (std::exception &e)
@@ -135,15 +255,30 @@ void init(GLWrapper *glw)
 		printf("\nImage file loading failed.");
 	}
 
+
+
 	/* Define uniforms to send to vertex shader */
-	modelID = glGetUniformLocation(program, "model");
-	colourmodeID = glGetUniformLocation(program, "colourmode");
-	emitmodeID = glGetUniformLocation(program, "emitmode");
-	viewID = glGetUniformLocation(program, "view");
-	projectionID = glGetUniformLocation(program, "projection");
-	lightposID = glGetUniformLocation(program, "lightpos");
-	normalmatrixID = glGetUniformLocation(program, "normalmatrix");
-	texturedID = glGetUniformLocation(program, "textured");
+	for (int i = 0; i < 3; i++)
+	{
+		glUseProgram(program[i]);
+		modelID[i] = glGetUniformLocation(program[i], "model");
+		colourmodeID[i] = glGetUniformLocation(program[i], "colourmode");
+		viewID[i] = glGetUniformLocation(program[i], "view");
+		projectionID[i] = glGetUniformLocation(program[i], "projection");
+		emitmodeID[i] = glGetUniformLocation(program[i], "emitmode");
+		normalmatrixID[i] = glGetUniformLocation(program[i], "normalmatrix");
+		texturedID[i] = glGetUniformLocation(program[i], "textured");
+	}
+	lightposID = glGetUniformLocation(program[0], "lightpos");
+	point_sizeID = glGetUniformLocation(program[1], "size");
+	speed = 0.025f;
+	maxdist = 10.f;
+	point_anim = new points2(5000, maxdist, speed);
+	point_anim->create();
+	point_size = 5;
+
+	// Enable gl_PointSize
+	glEnable(GL_PROGRAM_POINT_SIZE);
 }
 
 /* Called to update the display. Note that this function is called in the event loop in the wrapper
@@ -156,234 +291,664 @@ void display()
 	/* Clear the colour and frame buffers */
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glEnable(GL_BLEND);
+
 	/* Enable depth test  */
 	glEnable(GL_DEPTH_TEST);
 
 	/* Make the compiled shader program current */
-	glUseProgram(program);
+	glUseProgram(program[0]);
 
 	 //Define the model transformations for the cube
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(x+0.5, y, z));
-	model = glm::scale(model, glm::vec3(scale, scale, scale));//scale equally in all axis
-	model = glm::rotate(model, -angle_x, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -angle_y, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -angle_z, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
+	std::stack<glm::mat4> model;
+	model.push(glm::mat4(1.0f));
+	//glm::mat4 model = glm::mat4(1.0f);
+	model.top() = glm::translate(model.top(), glm::vec3(x+0.5, y, z));
+	model.top() = glm::rotate(model.top(), -angle_x, glm::vec3(1, 0, 0)); 
+	model.top() = glm::rotate(model.top(), -angle_y, glm::vec3(0, 1, 0)); 
+	model.top() = glm::rotate(model.top(), -angle_z, glm::vec3(0, 0, 1)); 
+	model.top() = glm::scale(model.top(), glm::vec3(scale, scale, scale));
+	model.push(model.top());
 
 	 //Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(30.0f, aspect_ratio, 0.1f, 100.0f);
+	glm::mat4 Projection = glm::perspective(30.0f, aspect_ratio, 0.1f, 300.0f);
 
 	 //Camera matrix
 	glm::mat4 View = glm::lookAt(
-		glm::vec3(0, 0, 20), // Camera is at (0,0,4), in World Space
-		glm::vec3(0, -1, 0), // and looks at the origin
+		glm::vec3(camera_x, camera_y, camera_z), // Camera is at (0,0,4), in World Space
+		glm::vec3(camera_x,camera_y, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 		);
 
 	 //Apply rotations to the view position
-	View = glm::rotate(View, -vx, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	View = glm::rotate(View, -vy, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
+	View = glm::rotate(View, -vx, glm::vec3(1, 0, 0)); 
+	View = glm::rotate(View, -vy, glm::vec3(0, 1, 0)); 
 	View = glm::rotate(View, -vz, glm::vec3(0, 0, 1));
 
 	 //Define the light position and transform by the view matrix
 	glm::vec4 lightpos = View *  glm::vec4(light_x, light_y, light_z, 1.0);
 
 	 //Define the normal matrix
-	glm::mat3 normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
+	glm::mat3 normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model.top())));
 
 	 //Send our uniforms variables to the currently bound shader,
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-	glUniform1ui(colourmodeID, colourmode);
-	glUniform1ui(emitmodeID, emitmode);
-	glUniform1ui(texturedID, textured);
-	glUniformMatrix4fv(viewID, 1, GL_FALSE, &View[0][0]);
-	glUniformMatrix4fv(projectionID, 1, GL_FALSE, &Projection[0][0]);
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
+
+
+	//skybox
+	glUseProgram(program[2]);
+	model.push(model.top()); 
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(0, 0, 0));
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.005f, scale / 0.005f, scale / 0.005f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[2], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(colourmodeID[2], colourmode);
+		glUniformMatrix4fv(viewID[2], 1, GL_FALSE, &View[0][0]);
+		glUniformMatrix4fv(projectionID[2], 1, GL_FALSE, &Projection[0][0]);
+
+		
+		if(night == true)
+		glBindTexture(GL_TEXTURE_2D, textureID8);
+		else
+		glBindTexture(GL_TEXTURE_2D, textureID9);
+
+		
+		sphere.drawSphere();
+
+		model.pop();
+	}
+
+	glUseProgram(program[0]);
+	glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+	glUniform1ui(colourmodeID[0], colourmode);
+	glUniform1ui(emitmodeID[0], emitmode);
+	glUniformMatrix4fv(viewID[0], 1, GL_FALSE, &View[0][0]);
+	glUniformMatrix4fv(projectionID[0], 1, GL_FALSE, &Projection[0][0]);
+	glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
 	glUniform4fv(lightposID, 1, glm::value_ptr(lightpos));
+	glUniform1ui(texturedID[0], textured);
 
-	//Clock Head Cube
+	//Left Wall
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(0, 2, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 1.f, scale / 0.15f, scale / 0.04f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
 
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -0.45));
-	model = glm::scale(model, glm::vec3(scale / 0.35f, scale / 0.35f, scale / 0.6f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+		
+		glBindTexture(GL_TEXTURE_2D, textureID2);
 
-	/* Draw our cube */
-	cube.drawCube();
+		
+		cube.drawCube();
+		model.pop();
+	}
 
+	//Right Wall
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(12, 2, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 1.f, scale / 0.15f, scale / 0.04f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
 
-	//Clock Mid Cube
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, -1, -0.45));
-	model = glm::scale(model, glm::vec3(scale / 0.45f, scale / 0.2f, scale / 0.7f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+		
+		glBindTexture(GL_TEXTURE_2D, textureID2);
 
-	/* Draw our cube */
-	cube.drawCube();
+		
+		cube.drawCube();
+		model.pop();
+	}
 
-	//Clock Base Cube
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, -2.5, -0.45));
-	model = glm::scale(model, glm::vec3(scale / 0.35f, scale / 0.45f, scale / 0.6f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -0.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -0.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+	//Back wall
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 2, -6));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 1.f, scale / 0.15f, scale / 0.0435f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
 
-	/* Draw our cube */
-	cube.drawCube();
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, -4.5, -0.45));
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-	terrain.drawObject(drawmode);
-
-	//Clock Face Outer
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -0.05));
-	model = glm::scale(model, glm::vec3(scale / 1.5f, scale / 1.5f, scale / 20.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-	/* Draw our cylinder */
-	cylinder.drawCylinder();
+		
+		glBindTexture(GL_TEXTURE_2D, textureID2);
 
 
-	glUniform1ui(texturedID, 1);
-
-	//Clock Face Inner
-	glBindTexture(GL_TEXTURE_2D, texID);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, 0));
-	model = glm::scale(model, glm::vec3(scale / 2.f, scale / 2.0f, scale / 20.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-	/* Draw our cylinder */
-	cylinder.drawCylinder();
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glUniform1ui(texturedID, 0);
+		
+		cube.drawCube();
+		model.pop();
+	}
 
 
 
-	//Clock Face center
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, 0.05));
-	model = glm::scale(model, glm::vec3(scale / 25.f, scale / 25.f, scale / 25.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
 
-	/* Draw our cylinder */
-	cylinder.drawCylinder();
+	//Front Wall
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 2, 6));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 1.f, scale / 0.15f, scale / 0.0435f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
 
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
 
-	//Clock Upper Hand
-	model = glm::mat4(1.0f);
-	model = glm::rotate(model, minuteHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
-	model = glm::translate(model, glm::vec3(0, 0, 0.06));
-	model = glm::scale(model, glm::vec3(scale / 15.f, scale / 1.5f, scale / 20.f));//scale equally in all axis
-	model = glm::rotate(model, -90.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+		
+		glBindTexture(GL_TEXTURE_2D, textureID2);
 
-	/* Draw our cylinder */
-	tetrahedron.drawTetrahedron();
+		cube.drawCube();
+		model.pop();
+	}
 
+	//Floor
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 0.25, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.04f, scale / 2.f, scale / 0.04f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
 
-	//Clock Lower Hand
-	model = glm::mat4(1.0f);
-	model = glm::rotate(model, hourHandswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
-	model = glm::translate(model, glm::vec3(0, 0, 0.06));
-	model = glm::scale(model, glm::vec3(scale / 15.f, scale / 1.8f, scale / 20.f));//scale equally in all axis
-	model = glm::rotate(model, -270.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -270.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -270.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+		
+		glBindTexture(GL_TEXTURE_2D, textureID7);
 
-	/* Draw our cylinder */
-	tetrahedron.drawTetrahedron();
+		
+		cube.drawCube();
+		model.pop();
+	}
 
 
-	//Clock Pendulum String
-	model = glm::mat4(1.0f);
-	model = glm::rotate(model, pendulumswing, glm::vec3(0, 0, 1)); //rotating in clockwise direction around x-axis
-	model = glm::translate(model, glm::vec3(0, -1, -0.05));
-	model = glm::scale(model, glm::vec3(scale / 20.0f, scale / 0.7f, scale / 50.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-	/* Draw our cylinder */
-	cube.drawCube();
-
-	//Clock Pendulum Weight
-	model = glm::mat4(1.0f);
-	model = glm::rotate(model, pendulumswing, glm::vec3(0, 0, 1));
-	model = glm::translate(model, glm::vec3(0, -1.5, -0.05));
-	model = glm::scale(model, glm::vec3(scale / 6.0f, scale / 6.0f, scale / 50.f));//scale equally in all axis
-	model = glm::rotate(model, -0.f, glm::vec3(1, 0, 0)); //rotating in clockwise direction around x-axis
-	model = glm::rotate(model, -90.f, glm::vec3(0, 1, 0)); //rotating in clockwise direction around y-axis
-	model = glm::rotate(model, -90.0f, glm::vec3(0, 0, 1)); //rotating in clockwise direction around z-axis //rotating in clockwise direction around z-axis
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-	/* Draw our cylinder */
-	cylinder.drawCylinder();
+	//Roof Bottom
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 6.6+ry, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.04f, scale / 2.f, scale / 0.04f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+		
+		glBindTexture(GL_TEXTURE_2D, textureID5);
 
 
-	/* Draw a small sphere in the lightsource position to visually represent the light source */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(light_x, light_y, light_z));
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f)); // make a small sphere
-	normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model)));
-	glUniformMatrix3fv(normalmatrixID, 1, GL_FALSE, &normalmatrix[0][0]);
-	glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+		cube.drawCube();
+		model.pop();
+	}
 
-	/* Draw our lightposition sphere */
-	emitmode = 1;
-	glUniform1ui(emitmodeID, emitmode);
-	sphere.drawSphere();
-	//drawSphere();
-	emitmode = 0;
+
+	//Roof 2nd Bottom
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 6.8+ry, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.045f, scale / 2.f, scale / 0.045f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glBindTexture(GL_TEXTURE_2D, textureID5);
+
+
+		cube.drawCube();
+		model.pop();
+	}
+
+	//Roof 3rd Bottom
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 7+ry, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.05f, scale / 2.f, scale / 0.05f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		glBindTexture(GL_TEXTURE_2D, textureID5);
+
+		cube.drawCube();
+		model.pop();
+	}
+
+
+	//Roof 4th Bottom
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 7.2+ry, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.055f, scale / 2.f, scale / 0.055f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+
+		glBindTexture(GL_TEXTURE_2D, textureID5);
+
+
+		cube.drawCube();
+		model.pop();
+	}
+
+	glUseProgram(program[0]);
+
+	//Bulb Holder
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 6.5+ry, 0));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 7.f, scale / 4.f, scale / 7.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		cylinder.drawCylinder();
+		model.pop();
+	}
+
+
+	//Bulb
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 6.1+ry, 0));
+		model.top() = glm::scale(model.top(), glm::vec3(0.2f, 0.2f, 0.2f)); 
+		normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model.top())));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		glUniform1ui(texturedID[0], 0);
+		emitmode = 1;
+		glUniform1ui(emitmodeID[0], emitmode);
+		sphere.drawSphere();
+		emitmode = 0;
+		model.pop();
+	}
+
+	//Door
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 1.2, 6));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 0.4f, scale / 0.3f, scale / 0.8f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 1);
+		glUniform1ui(emitmodeID[0], emitmode);
+		glBindTexture(GL_TEXTURE_2D, textureID3);
+
+
+		cube.drawCube();
+		model.pop();
+	}
+
+	//doorknob
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6.5, 1.1, 6.375));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 10.f, scale / 10.f, scale / 10.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		glBindTexture(GL_TEXTURE_2D, textureID4);
+
+		sphere.drawSphere();
+		model.pop();
+	}
+
+	//
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6.5, 1.1, 5.625));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), 90.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 10.f, scale / 10.f, scale / 10.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		glBindTexture(GL_TEXTURE_2D, textureID4);
+
+
+		sphere.drawSphere();
+		model.pop();
+	}
+
+
+	//bed
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(10.2, 0.35, -3.2));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -80.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale / 55.f, scale / 55.f, scale / 55.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		/* Draw bed */
+		glUniform1ui(texturedID[0], 0);
+		bed.drawObject();
+		model.pop();
+	}
+
+
+	//table leg
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(3, 0.5, -3.2));
+		model.top() = glm::scale(model.top(), glm::vec3(0.1f, 0.3f, 0.1f)); 
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID12);
+		cylinder.drawCylinder();
+		model.pop();
+	}
+
+	//table leg 2
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(1, 0.5, -3.2));
+		model.top() = glm::scale(model.top(), glm::vec3(0.1f, 0.3f, 0.1f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID12);
+		cylinder.drawCylinder();
+		model.pop();
+	}
+
+	//table leg 3
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(1, 0.5, -1));
+		model.top() = glm::scale(model.top(), glm::vec3(0.1f, 0.3f, 0.1f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID12);
+		cylinder.drawCylinder();
+		model.pop();
+	}
+
+	//table leg 4
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(3, 0.5, -1));
+		model.top() = glm::scale(model.top(), glm::vec3(0.1f, 0.3f, 0.1f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID12);
+		cylinder.drawCylinder();
+		model.pop();
+	}
+
+	//table surface
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(2, 1.1, -2.1));
+		model.top() = glm::scale(model.top(), glm::vec3(5.f, 0.3f, 5.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID12);
+		cube.drawCube();
+		model.pop();
+	}
+
+	//terrain
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(0, 3.0, 0));
+		normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model.top())));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 1);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		terrain.drawObject(drawmode);
+		model.pop();
+	}
+
+	//plants
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(3, 0, 8));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -180.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(1.f, 1.f, 1.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 0);
+		plants.drawObject();
+		model.pop();
+	}
+
+	//plants
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(9, 0, 8));
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::rotate(model.top(), -0.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -0.0f, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(1.f, 1.f, 1.f));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 0);
+		plants.drawObject();
+		model.pop();
+	}
+
+	//tree
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(0, 1.2, 12));
+		model.top() = glm::rotate(model.top(), 30.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::scale(model.top(), glm::vec3(0.7f, 0.7f, 0.7f)); 
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 1);
+		level = 6;
+		lsystem.draw(model, modelID[0], level, textureID11);
+		model.pop();
+	}
+
+	//tree
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(12, 1.2, 12));
+		model.top() = glm::rotate(model.top(), 30.f, glm::vec3(0, 1, 0)); 
+		model.top() = glm::scale(model.top(), glm::vec3(0.7f, 0.7f, 0.7f)); 
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+		glUniform1ui(texturedID[0], 1);
+		level = 5;
+		lsystem.draw(model, modelID[0], level, textureID11);
+		model.pop();
+	}
+
+
+
+	//  lightsource 
+	model.push(model.top());
+	{
+
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(light_x, light_y, light_z));
+		model.top() = glm::rotate(model.top(), 90.f, glm::vec3(1, 0, 0)); 
+		model.top() = glm::scale(model.top(), glm::vec3(1.f, 1.f, 1.f)); 
+		normalmatrix = glm::transpose(glm::inverse(glm::mat3(View * model.top())));
+		glUniformMatrix3fv(normalmatrixID[0], 1, GL_FALSE, &normalmatrix[0][0]);
+		glUniformMatrix4fv(modelID[0], 1, GL_FALSE, &model.top()[0][0]);
+
+
+		/* Draw our lightposition sphere */
+		glUniform1ui(texturedID[0], 1);
+		if(night == true)
+		glBindTexture(GL_TEXTURE_2D, textureID6);
+		else
+		glBindTexture(GL_TEXTURE_2D, textureID10);
+		emitmode = 1;
+		glUniform1ui(emitmodeID[0], emitmode);
+		sphere.drawSphere();
+		emitmode = 0;
+		model.pop();
+	}
+
+
+
+
+	glUseProgram(program[1]);
+
+	//particles
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(-6, 30, 0));
+		model.top() = glm::rotate(model.top(), -angle_y, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -angle_z, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale * 40, scale * 40, scale * 40));
+
+																 
+		glUniformMatrix4fv(modelID[1], 1, GL_FALSE, &model.top()[0][0]);
+		glUniform1ui(colourmodeID[1], colourmode);
+		glUniform1f(point_sizeID, point_size);
+		glUniformMatrix4fv(viewID[1], 1, GL_FALSE, &View[0][0]);
+		glUniformMatrix4fv(projectionID[1], 1, GL_FALSE, &Projection[0][0]);
+
+
+
+		point_anim->draw();
+		point_anim->animate();
+		model.pop();
+	}
+
+	//particles
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(6, 30, 0));
+		model.top() = glm::rotate(model.top(), -angle_y, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -angle_z, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale * 40, scale * 40, scale * 40));
+
+
+		glUniformMatrix4fv(modelID[1], 1, GL_FALSE, &model.top()[0][0]);
+		glUniform1ui(colourmodeID[1], colourmode);
+		glUniform1f(point_sizeID, point_size);
+		glUniformMatrix4fv(viewID[1], 1, GL_FALSE, &View[0][0]);
+		glUniformMatrix4fv(projectionID[1], 1, GL_FALSE, &Projection[0][0]);
+
+
+
+		point_anim->draw();
+		point_anim->animate();
+		model.pop();
+	}
+	//particles
+	model.push(model.top());
+	{
+		model.top() = glm::mat4(1.0f);
+		model.top() = glm::translate(model.top(), glm::vec3(16, 30, 0));
+		model.top() = glm::rotate(model.top(), -angle_y, glm::vec3(0, 1, 0)); 
+		model.top() = glm::rotate(model.top(), -angle_z, glm::vec3(0, 0, 1)); 
+		model.top() = glm::scale(model.top(), glm::vec3(scale * 40, scale * 40, scale * 40));
+
+												
+		glUniformMatrix4fv(modelID[1], 1, GL_FALSE, &model.top()[0][0]);
+		glUniform1ui(colourmodeID[1], colourmode);
+		glUniform1f(point_sizeID, point_size);
+		glUniformMatrix4fv(viewID[1], 1, GL_FALSE, &View[0][0]);
+		glUniformMatrix4fv(projectionID[1], 1, GL_FALSE, &Projection[0][0]);
+
+
+
+		point_anim->draw();
+		point_anim->animate();
+		model.pop();
+	}
 
 	glDisableVertexAttribArray(0);
-	glUseProgram(0);
-
-	/* Modify our animation variables */
-
-	pendulumswing += pendulumswing_inc;
-	if (fabs(pendulumswing) > pendulumswing_max) pendulumswing_inc = -pendulumswing_inc;
-
-	minuteHandswing -= minuteHandswing_inc;
-
-	hourHandswing -= hourHandswing_inc;
 
 
 }
@@ -404,35 +969,31 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-
-	if (key == '1') light_x -= 0.05f;
-	if (key == '2') light_x += 0.05f;
-	if (key == '3') light_y -= 0.05f;
-	if (key == '4') light_y += 0.05f;
-	if (key == '5') light_z -= 0.05f;
-	if (key == '6') light_z += 0.05f;
+	if (key == 'D') camera_x += 0.5f;
+	if (key == 'A') camera_x -= 0.5f;
+	if (key == 'W') camera_y += 0.5f;
+	if (key == 'S') camera_y -= 0.5f;
+	if (key == 'E') camera_z += 0.5f;
+	if (key == 'Q') camera_z -= 0.5f;
+	if (key == '1') light_x -= 0.1f;
+	if (key == '2') light_x += 0.1f;
+	if (key == '3') light_y -= 0.1f;
+	if (key == '4') light_y += 0.1f;
+	if (key == '5') light_z -= 0.1f;
+	if (key == '6') light_z += 0.1f;
 	if (key == '7') vx -= 1.f;
 	if (key == '8') vx += 1.f;
 	if (key == '9') vy -= 1.f;
 	if (key == '0') vy += 1.f;
 	if (key == 'O') vz -= 1.f;
 	if (key == 'P') vz += 1.f;
+	if (key == 'K') if (ry < 3.0f) ry += 0.2f;
+	if (key == 'L') if (ry > -2.8f) ry -= 0.2f;
 
-	if (key == 'K') minuteHandswing_inc += 0.05f; hourHandswing_inc = minuteHandswing_inc / 12;
-	if (key == 'L') minuteHandswing_inc -= 0.05f; hourHandswing_inc = minuteHandswing_inc / 12;
+	std::cout << "cam_x: " << camera_x << " cam_y: " << camera_y << " cam_z: " << camera_z << std::endl;
 
-	if (key == 'M' && action != GLFW_PRESS)
-	{
-		colourmode = !colourmode;
-		std::cout << "colourmode=" << colourmode << std::endl;
-	}
+	if (key == 'N' && action != GLFW_PRESS) if (night == true) { night = false; } else night = true;
 
-	/* Cycle between drawing vertices, mesh and filled polygons */
-	if (key == 'N' && action != GLFW_PRESS)
-	{
-		drawmode ++;
-		if (drawmode > 2) drawmode = 0;
-	}
 
 }
 
@@ -441,7 +1002,7 @@ static void keyCallback(GLFWwindow* window, int key, int s, int action, int mods
 /* Entry point of program */
 int main(int argc, char* argv[])
 {
-	GLWrapper *glw = new GLWrapper(1024, 768, "Gregor Whyte - Graphics Assignment 1");;
+	GLWrapper *glw = new GLWrapper(1024, 768, "Gregor Whyte - Graphics Assignment 2");;
 
 	if (!ogl_LoadFunctions())
 	{

@@ -30,7 +30,7 @@ Cylinder::~Cylinder()
 
 void Cylinder::init()
 {
-	numperdisk = 20;
+	numperdisk = 40;
 
 	makeCylinderVBO(numperdisk);
 	makeCylinderTopVBO(numperdisk);
@@ -46,9 +46,10 @@ GLuint Cylinder::makeCylinderVBO(GLuint numperdisk)
 	/* Calculate the number of vertices required in cylinder */
 	GLuint numvertices = 2 + 2 * numperdisk;
 	GLfloat* pVertices = new GLfloat[numvertices * 3];
+	GLfloat* pTextures = new GLfloat[numvertices * 2];
 	GLfloat* pNormals = new GLfloat[numvertices * 3];
 	GLfloat* pColours = new GLfloat[numvertices * 4];
-	makeCylinder(pVertices, pNormals, numperdisk);
+	makeCylinder(pVertices, pNormals, pTextures, numperdisk);
 
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
@@ -75,6 +76,11 @@ GLuint Cylinder::makeCylinderVBO(GLuint numperdisk)
 	glGenBuffers(1, &cylinderColours);
 	glBindBuffer(GL_ARRAY_BUFFER, cylinderColours);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 4, pColours, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &cylinderTextures);
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderTextures);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 2 + 2, pTextures, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Calculate the number of indices in our index array and allocate memory for it */
@@ -202,7 +208,8 @@ GLuint Cylinder::makeCylinderBottomVBO(GLuint numperdisk)
 	GLfloat* pBottomVertices = new GLfloat[numvertices * 3];
 	GLfloat* pBottomNormals = new GLfloat[numvertices * 3];
 	GLfloat* pBottomColours = new GLfloat[numvertices * 4];
-	makeCylinderBottom(pBottomVertices, pBottomNormals, numperdisk);
+	GLfloat* pBottomTextures = new GLfloat[numvertices * 2];
+	makeCylinderBottom(pBottomVertices, pBottomNormals, pBottomTextures, numperdisk);
 
 	/* Define colours as the x,y,z components of the cylinder vertices */
 	for (i = 0; i < numvertices; i++)
@@ -229,6 +236,11 @@ GLuint Cylinder::makeCylinderBottomVBO(GLuint numperdisk)
 	glGenBuffers(1, &cylinderBottomColours);
 	glBindBuffer(GL_ARRAY_BUFFER, cylinderBottomColours);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 4, pBottomColours, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &cylinderBottomTextures);
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderBottomTextures);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)* numvertices * 2, pBottomTextures, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Calculate the number of indices in our index array and allocate memory for it */
@@ -262,23 +274,22 @@ GLuint Cylinder::makeCylinderBottomVBO(GLuint numperdisk)
 /* Define the vertex positions for a cylinder. The array of vertices must have previosuly
 been created.
 */
-void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numperdisk)
+void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLfloat *pTextures, GLuint numperdisk)
 {
 	GLfloat DEG_TO_RADIANS = 3.141592f / 180.f;
 	GLuint vnum = 0;
 	GLuint r = 1;
 	GLfloat x, y, z, angle_radians;
+	GLuint tex;
 
 
-	/* Define north pole */
-	pVertices[0] = 0; pVertices[1] = 1; pVertices[2] = 0;
-	pNormals[0] = 0; pNormals[1] = 1; pNormals[2] = 0;
-	vnum++;
+
+
 
 	GLfloat anglestep = 360.f / numperdisk;
 
 	
-		for (GLfloat angle = -180.f; angle < 180.f; angle += anglestep)
+		for (GLfloat angle = 360.f; angle > 0; angle -= anglestep)
 		{
 			angle_radians = angle * DEG_TO_RADIANS;
 
@@ -286,8 +297,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 				x = r * cos(angle_radians);
 			else
 				x = 0;
-			y = 1;
-			//y = cos(lat_radians) * sin(lon_radians);
+			y = 2;
 			if (angle != 360 && angle != 180 && angle != -360 && angle != -180)
 				z = r * sin(angle_radians);
 			else
@@ -296,10 +306,18 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 			/* Define the vertex */
 			pVertices[vnum * 3] = x; pVertices[vnum * 3 + 1] = y; pVertices[vnum * 3 + 2] = z;
 			pNormals[vnum * 3] = x; pNormals[vnum * 3 + 1] = 0; pNormals[vnum * 3 + 2] = z;
+			pTextures[vnum * 2] = angle / 360.f; pTextures[vnum * 2 + 1] = 1;
 			vnum++;
 		}
+		pVertices[vnum * 3] = pVertices[0]; pVertices[vnum * 3 + 1] = pVertices[1]; pVertices[vnum * 3 + 2] = pVertices[2];
+		pNormals[vnum * 3] = pNormals[0]; pNormals[vnum * 3 + 1] = pNormals[1]; pNormals[vnum * 3 + 2] = pNormals[2];
 
-		for (GLfloat angle = -180.f; angle < 180.f; angle += anglestep)
+		pTextures[vnum * 2] = 0;
+		pTextures[vnum * 2 + 1] = 1;
+		vnum++;
+
+
+		for (GLfloat angle = 360.f; angle > 0; angle -= anglestep)
 		{
 			angle_radians = angle * DEG_TO_RADIANS;
 
@@ -307,8 +325,7 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 				x = r * cos(angle_radians);
 			else
 				x = 0;
-			y = -1;
-			//y = cos(lat_radians) * sin(lon_radians);
+			y = -2;
 			if (angle != 360 && angle != 180 && angle != -360 && angle != -180)
 				z = r * sin(angle_radians);
 			else
@@ -316,12 +333,19 @@ void  Cylinder::makeCylinder(GLfloat *pVertices, GLfloat *pNormals, GLuint numpe
 			/* Define the vertex */
 			pVertices[vnum * 3] = x; pVertices[vnum * 3 + 1] = y; pVertices[vnum * 3 + 2] = z;
 			pNormals[vnum * 3] = x; pNormals[vnum * 3 + 1] = 0; pNormals[vnum * 3 + 2] = z;
+			pTextures[vnum * 2] = angle / 360.f; pTextures[vnum * 2 + 1] = 0;
 			vnum++;
 		}
-	
-	/* Define south pole */
-	pVertices[vnum * 3] = 0; pVertices[vnum * 3 + 1] = -1; pVertices[vnum * 3 + 2] = 0;
-	pNormals[vnum * 3] = 0; pNormals[vnum * 3 + 1] = -1; pNormals[vnum * 3 + 2] = 0;
+		int index = numperdisk + 1;
+		pVertices[vnum * 3] = pVertices[index * 3]; pVertices[vnum * 3 + 1] = pVertices[index * 3 + 1]; pVertices[vnum * 3 + 2] = pVertices[index * 3 + 2];
+		pNormals[vnum * 3] = pNormals[index * 3]; pNormals[vnum * 3 + 1] = pNormals[index * 3 + 1]; pNormals[vnum * 3 + 2] = pNormals[index * 3 + 2];
+
+		pTextures[vnum * 2] = 0;
+		pTextures[vnum * 2 + 1] = 0;
+		//vnum++;
+
+
+
 
 }
 
@@ -334,7 +358,7 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLf
 
 
 	/* Define north pole */
-	pTopVertices[0] = 0; pTopVertices[1] = 1; pTopVertices[2] = 0;
+	pTopVertices[0] = 0; pTopVertices[1] = 2; pTopVertices[2] = 0;
 	pTopNormals[0] = 0; pTopNormals[1] = 1; pTopNormals[2] = 0;
 	pTopTextures[0] = 0.5; pTopTextures[1] = 0.5;
 	vnum++;
@@ -350,7 +374,7 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLf
 			x = r * cos(angle_radians);
 		else
 			x = 0;
-		y = 1;
+		y = 2;
 		//y = cos(lat_radians) * sin(lon_radians);
 		if (angle != 360 && angle != 180 && angle != -360 && angle != -180)
 			z = r * sin(angle_radians);
@@ -366,7 +390,7 @@ void  Cylinder::makeCylinderTop(GLfloat *pTopVertices, GLfloat *pTopNormals, GLf
 	}
 }
 
-void  Cylinder::makeCylinderBottom(GLfloat *pBottomVertices, GLfloat *pBottomNormals, GLuint numperdisk)
+void  Cylinder::makeCylinderBottom(GLfloat *pBottomVertices, GLfloat *pBottomNormals, GLfloat *pBottomTextures, GLuint numperdisk)
 {
 	GLfloat DEG_TO_RADIANS = 3.141592f / 180.f;
 	GLuint vnum = 0;
@@ -375,8 +399,9 @@ void  Cylinder::makeCylinderBottom(GLfloat *pBottomVertices, GLfloat *pBottomNor
 
 
 	/* Define south pole */
-	pBottomVertices[vnum * 3] = 0; pBottomVertices[vnum * 3 + 1] = -1; pBottomVertices[vnum * 3 + 2] = 0;
+	pBottomVertices[vnum * 3] = 0; pBottomVertices[vnum * 3 + 1] = -2; pBottomVertices[vnum * 3 + 2] = 0;
 	pBottomNormals[vnum * 3] = 0; pBottomNormals[vnum * 3 + 1] = -1; pBottomNormals[vnum * 3 + 2] = 0;
+	pBottomTextures[0] = 0.5; pBottomTextures[1] = 0.5;
 	vnum++;
 
 	GLfloat anglestep = 360.f / numperdisk;
@@ -390,7 +415,7 @@ void  Cylinder::makeCylinderBottom(GLfloat *pBottomVertices, GLfloat *pBottomNor
 			x = r * cos(angle_radians);
 		else
 			x = 0;
-		y = -1;
+		y = -2;
 		//y = cos(lat_radians) * sin(lon_radians);
 		if (angle != 360 && angle != 180 && angle != -360 && angle != -180)
 			z = r * sin(angle_radians);
@@ -399,6 +424,7 @@ void  Cylinder::makeCylinderBottom(GLfloat *pBottomVertices, GLfloat *pBottomNor
 		/* Define the vertex */
 		pBottomVertices[vnum * 3] = x; pBottomVertices[vnum * 3 + 1] = y; pBottomVertices[vnum * 3 + 2] = z;
 		pBottomNormals[vnum * 3] = 0; pBottomNormals[vnum * 3 + 1] = -1; pBottomNormals[vnum * 3 + 2] =0;
+		pBottomTextures[vnum * 2] = x*0.5 + 0.5; pBottomTextures[vnum * 2 + 1] = z*0.5 + 0.5;
 		vnum++;
 	}
 
@@ -422,6 +448,10 @@ void Cylinder::drawCylinder()
 
 	/* Bind the cylinder colours */
 	glBindBuffer(GL_ARRAY_BUFFER, cylinderColours);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderTextures);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
@@ -507,6 +537,10 @@ void Cylinder::drawCylinder()
 
 		/* Bind the cylinder colours */
 		glBindBuffer(GL_ARRAY_BUFFER, cylinderBottomColours);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ARRAY_BUFFER, cylinderBottomTextures);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(1);
 
